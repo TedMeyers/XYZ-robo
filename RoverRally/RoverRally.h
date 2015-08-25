@@ -8,9 +8,9 @@
 #define _ROVER_RALLY_H__
 
 // ----------------------------
-// Only define one of these...
-//#define USE_MPU
-#define USE_BNO
+// Only define one of these (gyros)...
+#define USE_MPU
+//#define USE_BNO
 // ----------------------------
 
 // ----------------------------

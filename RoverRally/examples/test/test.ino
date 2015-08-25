@@ -12,8 +12,8 @@
 
 // ----------------------------
 // Only define one of these...
-//#define USE_MPU
-#define USE_BNO
+#define USE_MPU
+//#define USE_BNO
 // ----------------------------
 
 #ifdef USE_BNO
