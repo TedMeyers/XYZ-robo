@@ -1,7 +1,11 @@
 /* BNO/MPU Rover Code
  by Ted Meyers (5/19/2015)
+ https://github.com/TedMeyers/XYZ-robo
  license: Beerware - Use this code however you'd like. If you 
  find it useful you can buy me a beer some time.
+
+ IMPORTANT: Go to RoverRally.h and set the gyro type to be use.  This
+            setting gets compiled in, and you have to pick one.
 */
 #include "RoverRally.h"
 
@@ -28,6 +32,7 @@ RoverRally::RoverRally()
   _steering_Kd = STEERING_D/(STEER_ADJ_TIME/1000.0);
 
   _ticks_per_distance = 1.0;
+  _wheel_encoder_counter = 0.0;
 
   _slowThrottle = _th_center;
   _setThrottle = _th_center;
@@ -110,9 +115,8 @@ void RoverRally::reset() {
   _steerInteg = 0.0;
   _lastRelHeading = 0.0;
 
-  _wheel_encoder_counter = 0;
-  _lastWheelEncoderCount = 0;
-  _updateWheelEncoderCount = 0;
+  _lastWheelEncoderCount = _wheel_encoder_counter;
+  _updateWheelEncoderCount = _wheel_encoder_counter;
   _moveCheckCount = 0;
 
   _steerDir = STEER_CLOSEST;

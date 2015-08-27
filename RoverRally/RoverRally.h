@@ -1,14 +1,24 @@
 
-/* BNO Rover Code
+/* MPU/BNO Rover Code
  by Ted Meyers (5/19/2015)
+ https://github.com/TedMeyers/XYZ-robo
  license: Beerware - Use this code however you'd like. If you 
  find it useful you can buy me a beer some time.
+
+ IMPORTANT: Define USE_MPU or USE_BNO below!
+
 */
 #ifndef _ROVER_RALLY_H__
 #define _ROVER_RALLY_H__
 
-// ----------------------------
-// Only define one of these (gyros)...
+// --------------------------------
+// --------- IMPORTANT! -----------
+// --------------------------------
+// This defines the type of
+// gyro to use (MPU605 or BNO-055)
+//
+// Only define one of these!
+// --------------------------------
 #define USE_MPU
 //#define USE_BNO
 // ----------------------------
@@ -94,7 +104,7 @@ class RoverRally
     void setThrottleValues(int center=DEFAULT_THROTTLE_CENTER, 
         int minFwd=DEFAULT_THROTTLE_MIN_FWD, int minRev=DEFAULT_THROTTLE_MIN_REV,
         int min=DEFAULT_THROTTLE_MIN, int max=DEFAULT_THROTTLE_MAX, int scale=DEFAULT_THROTTLE_SCALE);
-    
+
     void setWaypointConstants(float thresh, float offset) {_wp_thresh=thresh; _wp_follow_offset=offset;}
 
 
@@ -204,9 +214,8 @@ class RoverRally
     uint32_t markCurrentTicks() {_lastWheelEncoderCount = _wheel_encoder_counter; return _lastWheelEncoderCount;}
     uint32_t getCurrentTicks() {return (_wheel_encoder_counter - _lastWheelEncoderCount);}
     uint32_t getTotalTicks() {return _wheel_encoder_counter;}
-    void resetTicks() {_wheel_encoder_counter = 0; _updateWheelEncoderCount = 0;}
-    void setWheelEncoderCount(uint32_t val) {_wheel_encoder_counter = val;}
-
+    void setTotalTicks(uint32_t val) {_wheel_encoder_counter = val;}
+    
     uint8_t getState() {return _state;}
     uint8_t getMode() {return _curMode;}
     void setModeRun() {_curMode = MODE_RUN;}

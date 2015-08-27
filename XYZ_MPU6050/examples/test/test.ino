@@ -1,5 +1,7 @@
 /* XYZ_MPU6050 Test code
  by Ted Meyers  (5/19/2015)
+ https://github.com/TedMeyers/XYZ-robo
+
  license: Beerware - Use this code however you'd like. If you 
  find it useful you can buy me a beer some time.
 */

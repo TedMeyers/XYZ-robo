@@ -1,5 +1,9 @@
 
-/* This code is based on the following (https://github.com/kriswiner/BNO-055):
+/* BNO-055 library
+ by Ted Meyers (5/19/2015)
+ https://github.com/TedMeyers/XYZ-robo
+
+ This code is loosely based on the following (https://github.com/kriswiner/BNO-055):
  BNO055_MS5637_t3 Basic Example Code
  by: Kris Winer
  date: October 19, 2014
