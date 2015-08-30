@@ -211,6 +211,7 @@ class RoverRally
 
     int calcThrottleAbsOffset(int val);
 
+    uint32_t getMarkedTick() { return _lastWheelEncoderCount; }
     uint32_t markCurrentTicks() {_lastWheelEncoderCount = _wheel_encoder_counter; return _lastWheelEncoderCount;}
     uint32_t getCurrentTicks() {return (_wheel_encoder_counter - _lastWheelEncoderCount);}
     uint32_t getTotalTicks() {return _wheel_encoder_counter;}
@@ -224,7 +225,7 @@ class RoverRally
 
   private:
     #ifdef USE_MPU
-        XYZ_MPU6050 _xyz_imu
+        XYZ_MPU6050 _xyz_imu;
     #endif
     #ifdef USE_BNO
         XYZ_BNO055 _xyz_imu;

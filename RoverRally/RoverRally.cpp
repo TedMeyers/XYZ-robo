@@ -374,7 +374,6 @@ void RoverRally::waitForCustom(bool (*customWaitPtr)()) {
 void RoverRally::waitForButtonPress() {
   _state = STATE_BTN;
 
-  float cal1 = 0.0;
   uint8_t stats[4];
 
   uint32_t time = millis();
@@ -476,6 +475,7 @@ void RoverRally::updateCalibrationLED() {
     b = (stats[0]==3); //((stats[0]==3) && (stats[1]==3) && (stats[3]==3));
   #endif
   #ifdef USE_MPU
+    static float cal1 = 0.0;
     float cal2 = _xyz_imu.getHeading();
     b = (abs(cal1-cal2) < 0.07);
     cal1 = cal2;
