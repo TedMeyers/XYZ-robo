@@ -83,7 +83,7 @@
 #define THROTTLE_MIN_REV 185
 
 // Wheel encoder distance (your value my be a lot different)
-#define TICKS_PER_FOOT 72
+#define TICKS_PER_FOOT 20
 
 RoverRally myRover;
 uint32_t myUpdateTime;
