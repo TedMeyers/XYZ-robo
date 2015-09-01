@@ -120,6 +120,7 @@ class RoverRally
     void setStartHeading(float h) {_startMagHeading = h;}
     float getCurrentMagHeading() {return _curMagHeading;}
     float getCurrentHeading() {return _curRelHeading;}
+    void setToRelHeading(float h) {_toRelHeading = normalizeDeg360(h);}
     void resetHeading() {_startMagHeading=_curMagHeading; _toRelHeading=_curMagHeading;}
 
     bool isStopped() {return _stoppedFlag;}

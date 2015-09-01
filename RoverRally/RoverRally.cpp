@@ -299,7 +299,7 @@ void RoverRally::setAngleTurn(int angle) {
 }
 
 float RoverRally::setToHeading(float toHead) {
-  _toRelHeading = normalizeDeg360(toHead);
+  setToRelHeading(toHead);
   return calcHeadingDiff(_curRelHeading, _toRelHeading);
 }
 bool RoverRally::testToHeading(bool testNeg) {
@@ -365,7 +365,7 @@ void RoverRally::waitForWaypoint(float toX, float toY, float thresh) {
 
 void RoverRally::waitForCustom(bool (*customWaitPtr)()) {
   _state = STATE_CUST;
-  while (!customWaitPtr()) {
+  while (customWaitPtr()) {
     updateAll();
     delay(1);
   }
