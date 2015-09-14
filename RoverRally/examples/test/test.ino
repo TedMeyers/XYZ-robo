@@ -8,11 +8,40 @@
  IMPORTANT: Define USE_MPU or USE_BNO below!
             and also in RoverRally.h!
 */
-// ----------------------------
+// ----------------------------------------------------------
+// THE FOLLOWING VALUES MAY NEED TO BE ADJUSTED FOR YOUR BOT!
+// ----------------------------------------------------------
 // Only define one of these...
+// ----------------------------
 #define USE_MPU
 //#define USE_BNO
+// ----------------------------
 
+// Car throttle speed
+#define SPEED 30.0
+
+// Wheel encoder distance (your value my be a lot different)
+#define TICKS_PER_FOOT 20
+
+// Throttle and steering values:
+#define STEER_CENTER 89
+#define THROTTLE_CENTER 1502
+#define THROTTLE_MIN_FWD 73
+#define THROTTLE_MIN_REV 185
+
+// These are the arduino digital I/O pins used:
+// Throttle      - 4
+// Steering      - 5
+// Button        - 7
+// Wheel Encoder - 11 - (This must match port - take care if changing)
+//                      (See PinChangeInterrupt Library)
+// LED           - 13
+#define THR_PIN 4
+#define STR_PIN 5
+#define BTN_PIN 10
+#define WE_PIN  11
+#define LED_PIN 13
+// ---------------------------------------------------------------
 //
 // Serial out defines: uncomment to test
 // It is a good idea to NOT print serial unless needed
@@ -23,9 +52,12 @@
 // continuing on.
 //
 #define SERIAL_OUT
-//#define SERIAL_WAIT
 #define PRINT_UPDATES
+//#define SERIAL_WAIT
+// ---------------------------------------------------------------
 
+// ----------------------------
+// I2C for IMU communications...
 // ----------------------------
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
@@ -43,53 +75,29 @@
 #define NO_PIN_NUMBER
 #define DISABLE_PCINT_MULTI_SERVICE
 #include <PinChangeInt.h>
-// ----------------------------
 
+// ----------------------------
+// IMU headers
+// ----------------------------
 #ifdef USE_BNO
   #include "XYZ_BNO055.h"
   #define IMU_ADDR BNO055_ADDRESS_A
 #endif
 #ifdef USE_MPU
+  #define MPU6050_INCLUDE_DMP_MOTIONAPPS20
   #include "helper_3dmath.h"
   #include "XMPU6050_6Axis_MotionApps20.h"
   #include "XMPU6050.h"
   #include "XYZ_MPU6050.h"
   #define IMU_ADDR MPU6050_ADDRESS_A
 #endif
+// ----------------------------
+
 #include "RoverRally.h"
 
-// These are the arduino digital I/O pins used:
-// Throttle      - 4
-// Steering      - 5
-// Button        - 7
-// Wheel Encoder - 11 - (This must match port)
-// LED           - 13
-#define THR_PIN 4
-#define STR_PIN 5
-#define BTN_PIN 10
-#define WE_PIN  11
-#define LED_PIN 13
-
-// Throttle and steering values:
-#define STEER_CENTER 89
-#define THROTTLE_CENTER 1502
-#define THROTTLE_MIN_FWD 73
-#define THROTTLE_MIN_REV 185
-
-// Throttle and steering values:
-#define STEER_CENTER 89
-#define THROTTLE_CENTER 1502
-#define THROTTLE_MIN_FWD 73
-#define THROTTLE_MIN_REV 185
-
-// Wheel encoder distance (your value my be a lot different)
-#define TICKS_PER_FOOT 20
-
-RoverRally myRover;
-uint32_t myUpdateTime;
-
-volatile uint32_t _wheel_encoder_counter;
-
+// Global Objects...
+RoverRally myRover;              // The rover object (controls the rover)
+volatile uint32_t _wheel_encoder_counter;    // The number of wheel ticks
 
 void setup(void) { 
   //
@@ -114,13 +122,14 @@ void setup(void) {
       while (!Serial);     // For testing when using a Leonardo, waits for serial connection
                            // (DO NOT USE WHEN RUNNING -- will lock up here!)
     #endif
-    Serial.println("RoverRally Test begin...");
+    Serial.println(F("RoverRally Test begin..."));
   #endif
 
   //
   // Setup Rover
   //
-  myUpdateTime = 0;
+  myRover.setSlowThrottlePercent(10.0);
+  myRover.setThrottlePercent(20.0);  
   myRover.setUpdateCB(&updateCallback);
   myRover.setTickToDistanceConversion(TICKS_PER_FOOT);
   myRover.setSteeringValues(STEER_CENTER);
@@ -129,7 +138,7 @@ void setup(void) {
   if (test == 0) {
     while (true) {
       #ifdef SERIAL_OUT
-        Serial.print(F("No IMU found"));
+        Serial.println(F("No IMU found"));
       #endif
       digitalWrite(LED_PIN, HIGH);
       delay(500);
@@ -137,24 +146,24 @@ void setup(void) {
       delay(500);
     }   
   }
-  myRover.setSlowThrottlePercent(10.0);
-  myRover.setThrottlePercent(20.0);  
   #ifdef SERIAL_OUT
-    Serial.println("RoverRally Test Ready...");
+    Serial.println(F("RoverRally Test Ready..."));
   #endif
-
   reset();
 }
 
 void loop(void) 
 {
+  // Don't start until button is pressed
   myRover.waitForButtonPress();
   
   #ifdef SERIAL_OUT
-    Serial.println("RoverRally Test Go!");
+    Serial.println(F("RoverRally Test Go!"));
   #endif
   
   reset();
+  myRover.setSlowThrottlePercent(0.60*SPEED);
+  myRover.setThrottlePercent(SPEED);
   drive();
 }
 
@@ -162,11 +171,10 @@ void loop(void)
 // Speed is in throttle percent
 #define D_1 10.0
 #define D_2 5.0
-#define SPEED 30.0
+
+// Drive a rectangle
 void drive() {
   myRover.setModeRun();
-  myRover.setSlowThrottlePercent(0.60*SPEED);
-  myRover.setThrottlePercent(SPEED);
   myRover.waitForDistance(D_1); 
   
   myRover.turnToLeft(90);
@@ -185,27 +193,33 @@ void drive() {
   myRover.setModeWait();
 }
 
+// Update function -- does all the updating work when called
 void updateCallback(int state) {
+  static uint32_t updateTime = 0;   // Time of last update
   uint32_t ticks = update_wheel_encoder();
   myRover.updateAllBasic();
   
-  if ((millis() - myUpdateTime) > 200) {
-    myUpdateTime = millis();
+  if ((millis() - updateTime) > 200) {
+    updateTime = millis();
     myRover.updateCalibrationLED();
     uint8_t stats[4];
     myRover.readCalibrationStats(stats);
 
     #ifdef SERIAL_OUT
       #ifdef PRINT_UPDATES
+        Serial.print(updateTime);
+        Serial.print(F(" "));
         Serial.print(ticks);
-        Serial.print(" ");
+        Serial.print(F(" "));
         Serial.print(myRover.getMarkedTick());
-        Serial.print(" ");
-        Serial.print(stats[0]);
-        Serial.print(stats[1]);
-        Serial.print(stats[2]);
-        Serial.print(stats[3]);
-        Serial.print(" ");
+        #ifdef USE_BNO
+          Serial.print(F(" "));
+          Serial.print(stats[0]);
+          Serial.print(stats[1]);
+          Serial.print(stats[2]);
+          Serial.print(stats[3]);
+        #endif
+        Serial.print(F(" "));
         Serial.println(myRover.getCurrentHeading());
       #endif
     #endif
@@ -214,15 +228,18 @@ void updateCallback(int state) {
 
 void reset() {
   set_wheel_encoder(0);
+  myRover.setTotalTicks(0);
   myRover.reset();
 }
 
+// Update ticks in the rover
 uint32_t update_wheel_encoder() {
   uint32_t ticks = get_wheel_encoder();
   myRover.setTotalTicks(ticks);
   return ticks;
 }
 
+// Safely set the wheel encoder tick value
 void set_wheel_encoder(uint32_t ticks) {
   noInterrupts();
   _wheel_encoder_counter = ticks;
@@ -230,6 +247,7 @@ void set_wheel_encoder(uint32_t ticks) {
   myRover.setTotalTicks(ticks);
 }
 
+// Get the wheel encoder tick value safely
 uint32_t get_wheel_encoder() {
   uint32_t ticks;
   noInterrupts();
@@ -239,6 +257,7 @@ uint32_t get_wheel_encoder() {
 }
 
 // Encoder pin change callback
+// Gets called when the wheel encoder pin changes
 void wheel_encoder_tick() {
   _wheel_encoder_counter++;
 }

@@ -352,7 +352,7 @@ void RoverRally::waitForWaypoint(float toX, float toY, float thresh) {
   _state = STATE_WAYP;
   _x_wp = toX;
   _y_wp = toY;
-  float d = thresh+1;   // Go through loop at leas once
+  float d = thresh+1;   // Go through loop at least once
   while (d > thresh) {
     updateAll();
     if (_obstacleOverride) {_state=STATE_NONE; return;}

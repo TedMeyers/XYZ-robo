@@ -38,6 +38,7 @@ THE SOFTWARE.
 #define _XMPU6050_H_
 
 #include "I2Cdev.h"
+#include "helper_3dmath.h"
 
 // supporting link:  http://forum.arduino.cc/index.php?&topic=143444.msg1079517#msg1079517
 // also: http://forum.arduino.cc/index.php?&topic=141571.msg1062899#msg1062899s
@@ -51,6 +52,7 @@ THE SOFTWARE.
 #define PSTR(STR) STR
 #endif
 
+#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
 
 #define MPU6050_ADDRESS_AD0_LOW     0x68 // address pin low (GND), default for InvenSense evaluation board
 #define MPU6050_ADDRESS_AD0_HIGH    0x69 // address pin high (VCC)

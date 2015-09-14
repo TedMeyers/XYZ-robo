@@ -66,7 +66,7 @@ void XYZ_BNO055::init() {
    uint8_t MPwrMode = Normal;      // Select magnetometer power mode
    uint8_t Modr = MODR_10Hz;       // Select magnetometer ODR when in BNO055 bypass mode
    uint8_t PWRMode = Normal;       // Select BNO055 power mode
-   uint8_t OPRMode = IMU;         // specify operation mode for sensors
+   uint8_t OPRMode = NDOF;         // specify operation mode for sensors
 
    writeByte(_address, BNO055_PAGE_ID, 0x01);                                   // Select page 1 to configure sensors
    writeByte(_address, BNO055_ACC_CONFIG, APwrMode << 5 | Abw << 3 | Ascale);   // Configure ACC

@@ -38,6 +38,7 @@
 #endif
 #include <Servo.h>
 #ifdef USE_MPU
+  #define MPU6050_INCLUDE_DMP_MOTIONAPPS20
   #include "helper_3dmath.h"
   #include "XMPU6050.h"
   #include "XYZ_MPU6050.h"
@@ -91,7 +92,7 @@
 #define MODE_WAIT 0
 #define MODE_RUN 1
 
- #define WP_PATH_SIZE 20
+ #define WP_PATH_SIZE 40
 
 
 class RoverRally
