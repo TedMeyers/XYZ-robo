@@ -12,12 +12,13 @@
  #include "WProgram.h"
 #endif
 
+ #include "XMPU6050.h"
+
 #define RAD_TO_DEG (57.295779513)
 
 // class default I2C address is 0x68
 #define MPU6050_ADDRESS_A (0x68)
 #define MPU6050_ADDRESS_B (0x69)
-#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
 
 class XYZ_MPU6050
 {

@@ -84,10 +84,6 @@
   #define IMU_ADDR BNO055_ADDRESS_A
 #endif
 #ifdef USE_MPU
-  #define MPU6050_INCLUDE_DMP_MOTIONAPPS20
-  #include "helper_3dmath.h"
-  #include "XMPU6050_6Axis_MotionApps20.h"
-  #include "XMPU6050.h"
   #include "XYZ_MPU6050.h"
   #define IMU_ADDR MPU6050_ADDRESS_A
 #endif
@@ -98,6 +94,8 @@
 // Global Objects...
 RoverRally myRover;              // The rover object (controls the rover)
 volatile uint32_t _wheel_encoder_counter;    // The number of wheel ticks
+uint32_t myStartTime = 0;                    // Startup time (last reset)
+
 
 void setup(void) { 
   //
@@ -207,7 +205,7 @@ void updateCallback(int state) {
 
     #ifdef SERIAL_OUT
       #ifdef PRINT_UPDATES
-        Serial.print(updateTime);
+        Serial.print(updateTime-myStartTime);
         Serial.print(F(" "));
         Serial.print(ticks);
         Serial.print(F(" "));
@@ -226,10 +224,12 @@ void updateCallback(int state) {
   }
 }
 
+// Reset the rover, this is mostly about the wheel encoder ticks
 void reset() {
   set_wheel_encoder(0);
   myRover.setTotalTicks(0);
   myRover.reset();
+  myStartTime = millis();
 }
 
 // Update ticks in the rover

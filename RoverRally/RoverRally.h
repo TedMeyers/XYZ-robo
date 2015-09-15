@@ -36,11 +36,8 @@
 #else
  #include "WProgram.h"
 #endif
-#include <Servo.h>
+ 
 #ifdef USE_MPU
-  #define MPU6050_INCLUDE_DMP_MOTIONAPPS20
-  #include "helper_3dmath.h"
-  #include "XMPU6050.h"
   #include "XYZ_MPU6050.h"
   #define DEFAULT_ADDRESS MPU6050_ADDRESS_A
 #endif
@@ -48,6 +45,8 @@
   #include "XYZ_BNO055.h"
   #define DEFAULT_ADDRESS BNO055_ADDRESS_A
 #endif
+
+#include <Servo.h>
 
 #define RAD_TO_DEG 57.2957795
 #define DEG_TO_RAD 0.0174532925

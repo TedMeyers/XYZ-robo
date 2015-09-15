@@ -11,10 +11,6 @@
  #include "WProgram.h"
 #endif
 
-#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
-
-#include "helper_3dmath.h"
-#include "XMPU6050.h"
 #include "XYZ_MPU6050.h"
 
 

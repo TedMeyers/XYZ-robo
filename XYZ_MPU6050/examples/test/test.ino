@@ -9,8 +9,6 @@
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
 #endif
-#include "I2Cdev.h"
-#include "XMPU6050_6Axis_MotionApps20.h"
 #include "XYZ_MPU6050.h"
 
 
