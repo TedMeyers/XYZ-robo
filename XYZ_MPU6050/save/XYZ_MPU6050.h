@@ -1,21 +1,17 @@
 /* XYZ_MPU6050 Library
- by Ted Meyers  (4/4/2016)
-
- Copyright (c) 2016, Ted Meyers
-
- license: Cola-Ware - Use this code however you'd like. If you 
- find it useful you can buy me a Coke some time.
+ by Ted Meyers  (5/19/2015)
+ license: Beerware - Use this code however you'd like. If you 
+ find it useful you can buy me a beer some time.
 */
 #ifndef __XYZ_MPU6050_H__
 #define __XYZ_MPU6050_H__
+#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
 
 #if (ARDUINO >= 100)
  #include "Arduino.h"
 #else
  #include "WProgram.h"
 #endif
-
-#include "XMPU6050.h"
 
 #define RAD_TO_DEG (57.295779513)
 
@@ -50,11 +46,11 @@ class XYZ_MPU6050
 
   private:
   	XMPU6050 _mpu;
-    uint8_t _address;
-    uint16_t _packetSize;    // expected DMP packet size (default is 42 bytes)
-    uint8_t _fifoBuffer[64]; // FIFO storage buffer
-	  float _ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll
-    float _hdgOffset;        // Heading offset
+   //  uint8_t _address;
+   //  uint16_t _packetSize;     // expected DMP packet size (default is 42 bytes)
+   //  uint8_t _fifoBuffer[42];  // FIFO storage buffer for packetSize bytes
+	  // float _ypr[3];            // [yaw, pitch, roll]   yaw/pitch/roll
+   //  float _hdgOffset;         // Heading offset
 };
 
 #endif

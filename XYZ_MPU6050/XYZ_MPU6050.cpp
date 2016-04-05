@@ -1,9 +1,11 @@
 /* XYZ_MPU6050 Library
- by Ted Meyers  (5/19/2015)
+ by Ted Meyers  (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
- 
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
+
+ Copyright (c) 2016, Ted Meyers
+
+ license: Cola-Ware - Use this code however you'd like. If you 
+ find it useful you can buy me a Coke some time.
 */
 #if ARDUINO >= 100
  #include "Arduino.h"
@@ -11,6 +13,7 @@
  #include "WProgram.h"
 #endif
 
+#include "Wire.h"
 #include "XYZ_MPU6050.h"
 
 
@@ -25,7 +28,9 @@ void XYZ_MPU6050::setupI2C() {
   // join I2C bus (I2Cdev library doesn't do this automatically)
   #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
       Wire.begin();
-      TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
+      TWBR = 12; // set 400kHz mode @ 16MHz CPU or 200kHz mode @ 8MHz CPU
+      //TWBR = 24; // 400kHz I2C clock (200kHz if CPU is 8MHz)
+      delay(2000);
   #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
       Fastwire::setup(400, true);
   #endif

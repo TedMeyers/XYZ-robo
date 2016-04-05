@@ -1,14 +1,17 @@
 /* XYZ_MPU6050 Test code
- by Ted Meyers  (5/19/2015)
+ by Ted Meyers  (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
 
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
+ Copyright (c) 2016, Ted Meyers
+
+ license: Cola-Ware - Use this code however you'd like. If you 
+ find it useful you can buy me a Coke some time.
 */
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
 #endif
+#include "I2Cdev.h"
 #include "XYZ_MPU6050.h"
 
 
