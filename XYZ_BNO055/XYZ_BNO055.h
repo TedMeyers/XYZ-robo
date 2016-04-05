@@ -1,6 +1,6 @@
 
 /* BNO-055 library
- by Ted Meyers (5/19/2015)
+ by Ted Meyers (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
 
  This code is loosely based on the following (https://github.com/kriswiner/BNO-055):
@@ -8,8 +8,10 @@
  by: Kris Winer
  date: October 19, 2014
 
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
+ Copyright (c) 2016, Ted Meyers
+
+ license: Cola-Ware - Use this code however you'd like. If you 
+ find it useful you can buy me a Coke some time.
 */
 #ifndef __XYZ_BNO055_H__
 #define __XYZ_BNO055_H__
@@ -19,7 +21,8 @@
 #else
  #include "WProgram.h"
 #endif
-#include "Wire.h"
+
+#include "I2Cdev.h"
 
 // BNO055 Register Map
 // http://ae-bst.resource.bosch.com/media/products/dokumente/bno055/BST_BNO055_DS000_10_Release.pdf
@@ -254,6 +257,7 @@ class XYZ_BNO055
     };
 
     XYZ_BNO055();
+    void setupI2C();
 
     bool setup(uint8_t address=BNO055_ADDRESS_B);
     void init();

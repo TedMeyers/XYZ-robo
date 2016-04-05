@@ -1,9 +1,11 @@
 /* BNO-055 Test Code
- by Ted Meyers  (5/19/2015)
+ by Ted Meyers  (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
 
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
+ Copyright (c) 2016, Ted Meyers
+
+ license: Cola-Ware - Use this code however you'd like. If you 
+ find it useful you can buy me a Coke some time.
 */
 #include <Wire.h>
 #include <XYZ_BNO055.h>
@@ -25,7 +27,7 @@ void setup(void)
   // Setup serial connection
   delay(2000);
   Serial.begin(115200);
-  // while (!Serial);  // For testing using a Leonardo
+  while (!Serial);  // For testing using a Leonardo
   Serial.println("BNO055 Sensor Test"); Serial.println("");
   
   // Initialise the sensor
