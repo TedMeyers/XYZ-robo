@@ -10,8 +10,8 @@
  IMPORTANT: Define USE_MPU or USE_BNO below!
 
 */
-#ifndef _ROVER_RALLY_H__
-#define _ROVER_RALLY_H__
+#ifndef _XYZ_ROVER_H__
+#define _XYZ_ROVER_H__
 
 // --------------------------------
 // --------- IMPORTANT! -----------
@@ -40,13 +40,13 @@
 #else
  #include "WProgram.h"
 #endif
-
+ 
 #ifdef USE_TICO_SERVO
    #include "Adafruit_TiCoServo.h"
 #else
    #include "Servo.h"
 #endif
- 
+
 #ifdef USE_MPU
   #include "XYZ_MPU6050.h"
   #define DEFAULT_ADDRESS MPU6050_ADDRESS_A
@@ -55,7 +55,6 @@
   #include "XYZ_BNO055.h"
   #define DEFAULT_ADDRESS BNO055_ADDRESS_A
 #endif
-
 
 // These are defined in arduino.h
 //#define RAD_TO_DEG 57.2957795
@@ -107,10 +106,10 @@
  #define WP_PATH_SIZE 40
 
 
-class RoverRally
+class XYZ_Rover
 {
   public:
-    RoverRally();
+    XYZ_Rover();
 
     void setSteeringPID(float kp=STEERING_P, float ki=STEERING_I, float kd=STEERING_D);
     void setSteeringValues(int center=DEFAULT_STEER_CENTER, int min=DEFAULT_STEER_MIN, int max=DEFAULT_STEER_MAX);
