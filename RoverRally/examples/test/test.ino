@@ -8,13 +8,12 @@
  find it useful you can buy me a Coke some time.
 
  IMPORTANT: Define USE_MPU or USE_BNO below!
-            and also in XYZ_Rover.h!
+            and also in RoverRally.h!
 */
 // ----------------------------------------------------------
 // THE FOLLOWING VALUES MAY NEED TO BE ADJUSTED FOR YOUR BOT!
 // ----------------------------------------------------------
-// Only define one of these... 
-// And change in xYZ_Rover.h also!
+// Only define one of these...
 // ----------------------------
 #define USE_MPU
 //#define USE_BNO
@@ -93,10 +92,10 @@
 #endif
 // ----------------------------
 
-#include "XYZ_Rover.h"
+#include "RoverRally.h"
 
 // Global Objects...
-XYZ_Rover myRover;              // The rover object (controls the rover)
+RoverRally myRover;              // The rover object (controls the rover)
 uint32_t myStartTime = 0;        // Startup time (last reset)
 
 
@@ -117,7 +116,7 @@ void setup(void) {
       while (!Serial);     // For testing when using a Leonardo, waits for serial connection
                            // (DO NOT USE WHEN RUNNING -- will lock up here!)
     #endif
-    Serial.println(F("XYZ_Rover Test begin..."));
+    Serial.println(F("RoverRally Test begin..."));
   #endif
 
   //
@@ -142,7 +141,7 @@ void setup(void) {
     }   
   }
   #ifdef SERIAL_OUT
-    Serial.println(F("XYZ_Rover Test Ready..."));
+    Serial.println(F("RoverRally Test Ready..."));
   #endif
   resetAll();
 }
@@ -153,7 +152,7 @@ void loop(void)
   myRover.waitForButtonPress();
   
   #ifdef SERIAL_OUT
-    Serial.println(F("XYZ_Rover Test Go!"));
+    Serial.println(F("RoverRally Test Go!"));
   #endif
   
   resetAll();
