@@ -16,8 +16,8 @@
 // Only define one of these... 
 // And change in xYZ_Rover.h also!
 // ----------------------------
-#define USE_MPU
-//#define USE_BNO
+//#define USE_MPU
+#define USE_BNO
 // ----------------------------
 
 // Car throttle speed
