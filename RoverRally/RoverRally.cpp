@@ -7,15 +7,15 @@
  license: Cola-Ware - Use this code however you'd like. If you 
  find it useful you can buy me a Coke some time.
 
- IMPORTANT: Go to XYZ_Rover.h and set the gyro type to be use.  This
+ IMPORTANT: Go to RoverRally.h and set the gyro type to be use.  This
             setting gets compiled in, and you have to pick one.
 */
-#include "XYZ_Rover.h"
+#include "RoverRally.h"
 
 /***************************************************************************
  CONSTRUCTOR
  ***************************************************************************/
-XYZ_Rover::XYZ_Rover()
+RoverRally::RoverRally()
 {
   setSteeringValues();
   setThrottleValues();
@@ -48,17 +48,17 @@ XYZ_Rover::XYZ_Rover()
 
 
 
-void XYZ_Rover::setSteeringPID(float kp, float ki, float kd) {
+void RoverRally::setSteeringPID(float kp, float ki, float kd) {
   _steering_Kp = kp;
   _steering_Ki = ki*(STEER_ADJ_TIME/1000.0);
   _steering_Kd = kd/(STEER_ADJ_TIME/1000.0);
 }
-void XYZ_Rover::setSteeringValues(int center, int min, int max) {
+void RoverRally::setSteeringValues(int center, int min, int max) {
   _steer_center = center;
   _steer_min = min;
   _steer_max = max;
 }
-void XYZ_Rover::setThrottleValues(int center, int minFwd, int minRev,int min, int max, int scale) {
+void RoverRally::setThrottleValues(int center, int minFwd, int minRev,int min, int max, int scale) {
   _th_center = center;
   _th_minFwd = minFwd;
   _th_minRev = minRev;
@@ -67,7 +67,7 @@ void XYZ_Rover::setThrottleValues(int center, int minFwd, int minRev,int min, in
   _th_scale = scale;
 }
 
-int XYZ_Rover::setupI2C(int address) {
+int RoverRally::setupI2C(int address) {
   if (_isI2Csetup) return 1;
 
   // Initialise the IMU sensor
@@ -93,7 +93,8 @@ int XYZ_Rover::setupI2C(int address) {
   return status;
 }
 
-int XYZ_Rover::setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int address) {
+
+int RoverRally::setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int address) {
   _buttonPin = btnPin;
   _ledPin = ledPin;
 
@@ -128,12 +129,12 @@ int XYZ_Rover::setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int 
 
   pinMode(_ledPin, OUTPUT);
   digitalWrite(_ledPin, LOW);
-    
+  
   int status = setupI2C(address);
   return status;
 }
 
-void XYZ_Rover::reset() {
+void RoverRally::reset() {
   _toThrottle = _th_center;
   _toSteer = _steer_center;
   _slowOn = false;
@@ -170,25 +171,25 @@ void XYZ_Rover::reset() {
 }
 
 
-void XYZ_Rover::clearWaypoints() {
+void RoverRally::clearWaypoints() {
   for (int i=0; i<WP_PATH_SIZE; i++) {
     _wp_path_x[i] = 0.0;
     _wp_path_y[i] = 0.0;
     _wp_path_t[i] = -1.0;
   }  
 }
-void XYZ_Rover::setWaypointPath(int i, float x, float y, float t) {
+void RoverRally::setWaypointPath(int i, float x, float y, float t) {
   _wp_path_x[i] = x;
   _wp_path_y[i] = y;
   _wp_path_t[i] = t;
 }
-void XYZ_Rover::moveWaypointPath(int i, float dx, float dy) {
+void RoverRally::moveWaypointPath(int i, float dx, float dy) {
   _wp_path_x[i] += dx;
   _wp_path_y[i] += dy;
 }
 
 
-void XYZ_Rover::backAround(bool isLeft, float d1, float d2) {
+void RoverRally::backAround(bool isLeft, float d1, float d2) {
   int slow = _slowThrottle;
   int norm = _setThrottle;
   bool isOverride = _throttleOverride;
@@ -219,7 +220,7 @@ void XYZ_Rover::backAround(bool isLeft, float d1, float d2) {
 }
 
 
-void XYZ_Rover::backup(bool isTurn, bool isLeft, float angleDist) {
+void RoverRally::backup(bool isTurn, bool isLeft, float angleDist) {
   int slow = _slowThrottle;
   int norm = _setThrottle;
   int throttle = _th_center - calcThrottleAbsOffset(slow);
@@ -248,7 +249,7 @@ void XYZ_Rover::backup(bool isTurn, bool isLeft, float angleDist) {
 
 }
 
-void XYZ_Rover::brakeStop(int duration) {
+void RoverRally::brakeStop(int duration) {
   bool tmp = _throttleOverride;
   _throttleOverride = true;
   if (_curThrottle > _th_center) {
@@ -270,7 +271,7 @@ void XYZ_Rover::brakeStop(int duration) {
   _throttleOverride = tmp;
 }
 
-void XYZ_Rover::rollStop() {
+void RoverRally::rollStop() {
   bool tmp = _throttleOverride;
   _throttleOverride = true;
   setThrottlePercent(0);
@@ -279,14 +280,14 @@ void XYZ_Rover::rollStop() {
 }
 
 
-int XYZ_Rover::calcThrottleFromPercent(float percent) {
+int RoverRally::calcThrottleFromPercent(float percent) {
   int amt = (int)(percent*_th_scale);
   if (amt < 0) amt -= _th_minRev;
   else if (amt > 0) amt += _th_minFwd;
   return normalizeThrottle(amt);
 }
 
-void XYZ_Rover::setDirection(int dir) {
+void RoverRally::setDirection(int dir) {
   if (_steerDir != dir) {
     if (dir == STEER_LEFT) _steerDir = STEER_LEFT;
     else if (dir == STEER_RIGHT) _steerDir = STEER_RIGHT;
@@ -294,57 +295,57 @@ void XYZ_Rover::setDirection(int dir) {
   }
 }
 
-void XYZ_Rover::turnToLeft(float angle) {
+void RoverRally::turnToLeft(float angle) {
   int dir = _steerDir;
   setLeftTurn(angle);
   waitForHeading(_toRelHeading);
   _steerDir  = dir;
 }
-void XYZ_Rover::turnToRight(float angle) {
+void RoverRally::turnToRight(float angle) {
   int dir = _steerDir;
   setRightTurn(angle);
   waitForHeading(_toRelHeading);
   _steerDir  = dir;
 }
-void XYZ_Rover::turnToClosest(float heading) {
+void RoverRally::turnToClosest(float heading) {
   int dir = _steerDir;
   setClosest();
   setHeadingTurn(heading);
   waitForHeading(_toRelHeading);
   _steerDir  = dir;
 }
-void XYZ_Rover::setStraight() {
+void RoverRally::setStraight() {
   setClosest();
   setAngleTurn(0);
 }
-void XYZ_Rover::setLeftTurn(int angle) {
+void RoverRally::setLeftTurn(int angle) {
   setLeft();
   setAngleTurn(-angle);
 }
-void XYZ_Rover::setRightTurn(int angle) {
+void RoverRally::setRightTurn(int angle) {
   setRight();
   setAngleTurn(angle);
 }
-void XYZ_Rover::setHeadingTurn(int hdg) {
+void RoverRally::setHeadingTurn(int hdg) {
   _toRelHeading = normalizeDeg180(hdg);
   _lastRelHeading = _curRelHeading;
 }
-void XYZ_Rover::setAngleTurn(int angle) {
+void RoverRally::setAngleTurn(int angle) {
   _toRelHeading = normalizeDeg180(_toRelHeading + angle);
   _lastRelHeading = _curRelHeading;
 }
 
-float XYZ_Rover::setToHeading(float toHead) {
+float RoverRally::setToHeading(float toHead) {
   setToRelHeading(toHead);
   return calcHeadingDiff(_curRelHeading, _toRelHeading);
 }
-bool XYZ_Rover::testToHeading(bool testNeg) {
+bool RoverRally::testToHeading(bool testNeg) {
   float d = calcHeadingDiff(_curRelHeading, _toRelHeading);
   return (testNeg) ? (d < -HEADING_THRESHOLD) : (d > HEADING_THRESHOLD);
 }
 
 
-void XYZ_Rover::driveWaypointPath(int i) {
+void RoverRally::driveWaypointPath(int i) {
   _c_wp = (i+1);
   while (_c_wp > 0 && _c_wp < WP_PATH_SIZE && _wp_path_t[_c_wp] >= 0) {
     int c0 = _c_wp-1;
@@ -361,7 +362,7 @@ void XYZ_Rover::driveWaypointPath(int i) {
   _state = STATE_NONE;
   _slowOn = false;
 }
-void XYZ_Rover::driveWaypointLine(float x0, float y0, float x1, float y1, float thresh) {
+void RoverRally::driveWaypointLine(float x0, float y0, float x1, float y1, float thresh) {
   float d1 = getDistanceFrom(x1, y1);
   float dt = getDistance(x0, y0, x1, y1);
   float dx = (x1-x0)/dt;
@@ -384,7 +385,7 @@ void XYZ_Rover::driveWaypointLine(float x0, float y0, float x1, float y1, float 
   _state = STATE_NONE;
 }
 
-void XYZ_Rover::waitForWaypoint(float toX, float toY, float thresh) {
+void RoverRally::waitForWaypoint(float toX, float toY, float thresh) {
   _state = STATE_WAYP;
   _x_wp = toX;
   _y_wp = toY;
@@ -399,7 +400,7 @@ void XYZ_Rover::waitForWaypoint(float toX, float toY, float thresh) {
   _state = STATE_NONE;
 }
 
-void XYZ_Rover::waitForCustom(bool (*customWaitPtr)()) {
+void RoverRally::waitForCustom(bool (*customWaitPtr)()) {
   _state = STATE_CUST;
   while (customWaitPtr()) {
     updateAll();
@@ -407,13 +408,13 @@ void XYZ_Rover::waitForCustom(bool (*customWaitPtr)()) {
   }
   _state = STATE_NONE;
 }
-void XYZ_Rover::waitForButtonPress() {
+void RoverRally::waitForButtonPress() {
   _state = STATE_BTN;
 
   uint32_t time = millis();
   int curBtn = digitalRead(_buttonPin);
   while (digitalRead(_buttonPin) == curBtn) {
-    if ((millis() - time) > 100) {
+    if ((millis() - time) > 200) {
       updateCalibrationLED();
       time = millis();
     }
@@ -422,7 +423,7 @@ void XYZ_Rover::waitForButtonPress() {
   _state = STATE_NONE;
 }
 
-void XYZ_Rover::waitForHeading(float toHead) {
+void RoverRally::waitForHeading(float toHead) {
   _state = STATE_TURN;
   updateAll();
   bool testNeg = (setToHeading(toHead) < 0.0);
@@ -431,7 +432,7 @@ void XYZ_Rover::waitForHeading(float toHead) {
   }
   _state = STATE_NONE;
 }
-void XYZ_Rover::waitForTime(uint32_t msecs) {
+void RoverRally::waitForTime(uint32_t msecs) {
   _state = STATE_WAIT;
   uint32_t endtime = millis() + msecs;
   updateAll();
@@ -440,7 +441,7 @@ void XYZ_Rover::waitForTime(uint32_t msecs) {
   }
   _state = STATE_NONE;
 }
-void XYZ_Rover::waitForTicks(int32_t numTicks) {
+void RoverRally::waitForTicks(int32_t numTicks) {
   _state = STATE_DIST;
   updateAll();  
   markCurrentTicks();
@@ -456,20 +457,21 @@ void XYZ_Rover::waitForTicks(int32_t numTicks) {
   }
   _state = STATE_NONE;
 }
-void XYZ_Rover::waitForDistance(float dist) {
+void RoverRally::waitForDistance(float dist) {
   int32_t ticks = convertDistanceToTicks(dist);
   waitForTicks(ticks);
 }
 
-void XYZ_Rover::updateAll() {
+void RoverRally::updateAll() {
   if (_updateCB) (*_updateCB)(_state);
   else updateAllBasic();
 }
 
-void XYZ_Rover::updateAllBasic() {
+void RoverRally::updateAllBasic() {
   if ((millis() - _imu_update_time) >= 10) {
     _imu_update_time = millis();
     #ifdef USE_BNO
+      _xyz_imu.readHeading();
       _curMagHeading = normalizeDeg180(_xyz_imu.readHeading());
       _curRelHeading = normalizeDeg180(_curMagHeading - _startMagHeading);
     #endif
@@ -508,7 +510,7 @@ void XYZ_Rover::updateAllBasic() {
   }
 }
 
-void XYZ_Rover::updateCalibrationLED() {
+void RoverRally::updateCalibrationLED() {
   bool b = false;
   #ifdef USE_BNO
     uint8_t stats[4];
@@ -524,7 +526,7 @@ void XYZ_Rover::updateCalibrationLED() {
   digitalWrite(_ledPin, (b)?HIGH:LOW); 
 }
 
-void XYZ_Rover::updatePosition() {
+void RoverRally::updatePosition() {
   if (_updateWheelEncoderCount != _wheel_encoder_counter) {
     float h = _curRelHeading * DEG_TO_RAD;
     float d = (_wheel_encoder_counter - _updateWheelEncoderCount) / _ticks_per_distance;
@@ -535,7 +537,7 @@ void XYZ_Rover::updatePosition() {
   }
 }
 
-void XYZ_Rover::updateSteering() {
+void RoverRally::updateSteering() {
   uint32_t now = millis();
   uint32_t delt_t = now - _steer_adj_time;
 
@@ -575,7 +577,7 @@ void XYZ_Rover::updateSteering() {
   }
 }
 
-void XYZ_Rover::updateThrottle() {
+void RoverRally::updateThrottle() {
   if (_curMode == MODE_WAIT) {
     _toThrottle = _th_center;
   } else {
@@ -588,13 +590,13 @@ void XYZ_Rover::updateThrottle() {
   }
 }
 
-void XYZ_Rover::adjustThrottle() {
+void RoverRally::adjustThrottle() {
   if (_curThrottle != _toThrottle) {
     _curThrottle = _toThrottle;
     _throttleServo.write(_curThrottle);
   }
 }
-void XYZ_Rover::adjustSteering() {
+void RoverRally::adjustSteering() {
   if (_curSteer != _toSteer) {
     int steer_val = map(_toSteer, _steer_min, _steer_max, SERVO_MIN, SERVO_MAX);
     _steeringServo.write(steer_val);
@@ -602,7 +604,7 @@ void XYZ_Rover::adjustSteering() {
   }
 }
 
-int XYZ_Rover::normalizeSteering(int amount) {
+int RoverRally::normalizeSteering(int amount) {
   if ((amount < 0) && (amount > -STEERING_EPS)) amount = -STEERING_EPS;
   if ((amount > 0) && (amount <  STEERING_EPS)) amount = STEERING_EPS;
 
@@ -611,26 +613,26 @@ int XYZ_Rover::normalizeSteering(int amount) {
   if (steering > _steer_max) steering = _steer_max;
   return steering;
 }
-int XYZ_Rover::normalizeThrottle(int amount) {
+int RoverRally::normalizeThrottle(int amount) {
   int throttle = _th_center + amount;
   if (throttle < _th_min) throttle = _th_min;
   if (throttle > _th_max) throttle = _th_max;
   return throttle;
 }
 
-float XYZ_Rover::normalizeDeg180(float h) {
+float RoverRally::normalizeDeg180(float h) {
   while (h > 180.0)  h -= 360.0;
   while (h < -180.0) h += 360.0;
   return h;
 }
-float XYZ_Rover::normalizeDeg360(float heading) {
+float RoverRally::normalizeDeg360(float heading) {
   if (heading < 0) heading += 360;
   if (heading < 0) heading += 360;
   if (heading > 360) heading -= 360;
   if (heading > 360) heading -= 360;
   return heading;
 }
-float XYZ_Rover::calcHeadingDiff(float cur, float to) {
+float RoverRally::calcHeadingDiff(float cur, float to) {
   float d = (cur - to);
   if (d <= -180.0) d += 360.0;
   if (d >   180.0) d -= 360.0;
@@ -638,7 +640,7 @@ float XYZ_Rover::calcHeadingDiff(float cur, float to) {
 }
 
 
-float XYZ_Rover::getHeadingTo(float x, float y) {
+float RoverRally::getHeadingTo(float x, float y) {
   float dx = (x - _x_pos);
   float dy = (y - _y_pos);
   float ang = 0.0;
@@ -647,7 +649,7 @@ float XYZ_Rover::getHeadingTo(float x, float y) {
   return deg;
 }
 
-float XYZ_Rover::getDistance(float x0, float y0, float x1, float y1) {
+float RoverRally::getDistance(float x0, float y0, float x1, float y1) {
   float dx = (x1 - x0);
   float dy = (y1 - y0);
   float d2 = dx*dx + dy*dy;
@@ -655,13 +657,13 @@ float XYZ_Rover::getDistance(float x0, float y0, float x1, float y1) {
   return d;
 }
 
-void XYZ_Rover::readCalibrationStats(uint8_t *stats) {
+void RoverRally::readCalibrationStats(uint8_t *stats) {
   #ifdef USE_BNO
     _xyz_imu.readCalibration(stats);
   #endif
 }
 
-int XYZ_Rover::calcThrottleAbsOffset(int val) {
+int RoverRally::calcThrottleAbsOffset(int val) {
   int offset = (val - _th_center);
   if (offset < 0) offset *= -1;
   return offset;
