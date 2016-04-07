@@ -21,8 +21,8 @@
 //
 // Only define one of these!
 // --------------------------------
-//#define USE_MPU
-#define USE_BNO
+#define USE_MPU
+//#define USE_BNO
 // ----------------------------
 
 #define USE_TICO_SERVO
@@ -120,7 +120,7 @@ class XYZ_Rover
     void setWaypointConstants(float thresh, float offset) {_wp_thresh=thresh; _wp_follow_offset=offset;}
 
 
-    int setupI2C(int address=DEFAULT_ADDRESS);
+    int setupI2C_IMU(int address=DEFAULT_ADDRESS);
     int setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int address=DEFAULT_ADDRESS);
     void reset();
 
@@ -277,7 +277,7 @@ class XYZ_Rover
     uint32_t _steer_adj_time;
     uint32_t _moveCheckTime;
 
-    bool _isI2Csetup;
+    bool _isI2C_IMU_setup;
     bool _obstacleOverride;
     bool _slowOn;
     bool _hardTurnOn;

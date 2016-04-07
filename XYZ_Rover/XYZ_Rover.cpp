@@ -23,7 +23,7 @@ XYZ_Rover::XYZ_Rover()
 
   _updateCB = 0;
 
-  _isI2Csetup = false;
+  _isI2C_IMU_setup = false;
   _start_time = 0;
   _imu_update_time = 0;
   _steer_adj_time = 0;
@@ -46,8 +46,6 @@ XYZ_Rover::XYZ_Rover()
   addWaypointPath(0.0, 0.0, 0.0);
 }
 
-
-
 void XYZ_Rover::setSteeringPID(float kp, float ki, float kd) {
   _steering_Kp = kp;
   _steering_Ki = ki*(STEER_ADJ_TIME/1000.0);
@@ -67,17 +65,17 @@ void XYZ_Rover::setThrottleValues(int center, int minFwd, int minRev,int min, in
   _th_scale = scale;
 }
 
-int XYZ_Rover::setupI2C(int address) {
-  if (_isI2Csetup) return 1;
+int XYZ_Rover::setupI2C_IMU(int address) {
+  if (_isI2C_IMU_setup) return 1;
 
   // Initialise the IMU sensor
+  _xyz_imu.setupI2C();
+
   int status = 0;
   #ifdef USE_MPU
-    _xyz_imu.setupI2C();
     status = (_xyz_imu.setup(address))?0:1;
   #endif
   #ifdef USE_BNO
-    _xyz_imu.setupI2C();
     if (!_xyz_imu.setup(address)) {
       status = 0;
     } else {
@@ -87,7 +85,7 @@ int XYZ_Rover::setupI2C(int address) {
   #endif
 
   if (status == 1) {
-    _isI2Csetup = true;
+    _isI2C_IMU_setup = true;
   }
 
   return status;
@@ -110,26 +108,13 @@ int XYZ_Rover::setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int 
   _steeringServo.write(steer_val); 
  
   // Initialise the IMU sensor
-  int status = 0;
-  #ifdef USE_MPU
-    _xyz_imu.setupI2C();
-    status = (_xyz_imu.setup(address))?0:1;
-  #endif
-  #ifdef USE_BNO
-    if (!_xyz_imu.setup(address)) {
-      status = 0;
-    } else {
-      _xyz_imu.setMode(XYZ_BNO055::IMU);
-      status = 1;      
-    }
-  #endif
+  int status = setupI2C_IMU(address);
 
   pinMode(_buttonPin, INPUT_PULLUP);
 
   pinMode(_ledPin, OUTPUT);
   digitalWrite(_ledPin, LOW);
     
-  int status = setupI2C(address);
   return status;
 }
 
