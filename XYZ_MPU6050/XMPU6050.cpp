@@ -456,7 +456,7 @@ uint8_t XMPU6050::getFullScaleGyroRange() {
   * @return factory trim value
   * @see MPU6050_RA_SELF_TEST_X
   */
- uint8_t MPU6050::getAccelXSelfTestFactoryTrim() {
+ uint8_t XMPU6050::getAccelXSelfTestFactoryTrim() {
      I2Cdev::readByte(devAddr, MPU6050_RA_SELF_TEST_X, &buffer[0]);
    I2Cdev::readByte(devAddr, MPU6050_RA_SELF_TEST_A, &buffer[1]);  
      return (buffer[0]>>3) | ((buffer[1]>>4) & 0x03);
@@ -466,7 +466,7 @@ uint8_t XMPU6050::getFullScaleGyroRange() {
   * @return factory trim value
   * @see MPU6050_RA_SELF_TEST_Y
   */
- uint8_t MPU6050::getAccelYSelfTestFactoryTrim() {
+ uint8_t XMPU6050::getAccelYSelfTestFactoryTrim() {
      I2Cdev::readByte(devAddr, MPU6050_RA_SELF_TEST_Y, &buffer[0]);
    I2Cdev::readByte(devAddr, MPU6050_RA_SELF_TEST_A, &buffer[1]);  
      return (buffer[0]>>3) | ((buffer[1]>>2) & 0x03);
@@ -476,7 +476,7 @@ uint8_t XMPU6050::getFullScaleGyroRange() {
   * @return factory trim value
   * @see MPU6050_RA_SELF_TEST_Z
   */
- uint8_t MPU6050::getAccelZSelfTestFactoryTrim() {
+ uint8_t XMPU6050::getAccelZSelfTestFactoryTrim() {
      I2Cdev::readBytes(devAddr, MPU6050_RA_SELF_TEST_Z, 2, buffer);    
      return (buffer[0]>>3) | (buffer[1] & 0x03);
  }
@@ -485,7 +485,7 @@ uint8_t XMPU6050::getFullScaleGyroRange() {
   * @return factory trim value
   * @see MPU6050_RA_SELF_TEST_X
   */
- uint8_t MPU6050::getGyroXSelfTestFactoryTrim() {
+ uint8_t XMPU6050::getGyroXSelfTestFactoryTrim() {
      I2Cdev::readByte(devAddr, MPU6050_RA_SELF_TEST_X, buffer);    
      return (buffer[0] & 0x1F);
  }
@@ -494,7 +494,7 @@ uint8_t XMPU6050::getFullScaleGyroRange() {
   * @return factory trim value
   * @see MPU6050_RA_SELF_TEST_Y
   */
- uint8_t MPU6050::getGyroYSelfTestFactoryTrim() {
+ uint8_t XMPU6050::getGyroYSelfTestFactoryTrim() {
      I2Cdev::readByte(devAddr, MPU6050_RA_SELF_TEST_Y, buffer);    
      return (buffer[0] & 0x1F);
  }
@@ -503,7 +503,7 @@ uint8_t XMPU6050::getFullScaleGyroRange() {
   * @return factory trim value
   * @see MPU6050_RA_SELF_TEST_Z
   */
- uint8_t MPU6050::getGyroZSelfTestFactoryTrim() {
+ uint8_t XMPU6050::getGyroZSelfTestFactoryTrim() {
      I2Cdev::readByte(devAddr, MPU6050_RA_SELF_TEST_Z, buffer);    
      return (buffer[0] & 0x1F);
  }
@@ -2261,7 +2261,7 @@ uint32_t XMPU6050::getExternalSensorDWord(int position) {
  * @return Motion detection status byte
  * @see MPU6050_RA_MOT_DETECT_STATUS
  */
- uint8_t MPU6050::getMotionStatus() {
+ uint8_t XMPU6050::getMotionStatus() {
      I2Cdev::readByte(devAddr, MPU6050_RA_MOT_DETECT_STATUS, buffer);
      return buffer[0];
  }

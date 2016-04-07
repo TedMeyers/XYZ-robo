@@ -17,7 +17,7 @@
 
 #include "XMPU6050.h"
 
-#define RAD_TO_DEG (57.295779513)
+//#define RAD_TO_DEG (57.295779513) // Defined in Arduino.h
 
 // class default I2C address is 0x68
 #define MPU6050_ADDRESS_A (0x68)
