@@ -1,9 +1,11 @@
-
 /* MPU/BNO Rover Code
- by Ted Meyers (5/19/2015)
+ by Ted Meyers (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
+
+ Copyright (c) 2016, Ted Meyers
+
+ license: Cola-Ware - Use this code however you'd like. If you 
+ find it useful you can buy me a Coke some time.
 
  IMPORTANT: Define USE_MPU or USE_BNO below!
 
@@ -19,9 +21,11 @@
 //
 // Only define one of these!
 // --------------------------------
-#define USE_MPU
-//#define USE_BNO
+//#define USE_MPU
+#define USE_BNO
 // ----------------------------
+
+#define USE_TICO_SERVO
 
 // ----------------------------
 // define to have the code set the stop flag (if stopped)
@@ -36,6 +40,12 @@
 #else
  #include "WProgram.h"
 #endif
+
+#ifdef USE_TICO_SERVO
+   #include "Adafruit_TiCoServo.h"
+#else
+   #include "Servo.h"
+#endif
  
 #ifdef USE_MPU
   #include "XYZ_MPU6050.h"
@@ -46,10 +56,13 @@
   #define DEFAULT_ADDRESS BNO055_ADDRESS_A
 #endif
 
-#include <Servo.h>
 
-#define RAD_TO_DEG 57.2957795
-#define DEG_TO_RAD 0.0174532925
+// These are defined in arduino.h
+//#define RAD_TO_DEG 57.2957795
+//#define DEG_TO_RAD 0.0174532925
+
+#define SERVO_MIN 1000
+#define SERVO_MAX 2000
 
 #define DEFAULT_WP_THRESH 11.0
 #define DEFAULT_WP_FOLLOW_OFFSET 12.0
@@ -108,6 +121,7 @@ class RoverRally
     void setWaypointConstants(float thresh, float offset) {_wp_thresh=thresh; _wp_follow_offset=offset;}
 
 
+    int setupI2C(int address=DEFAULT_ADDRESS);
     int setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int address=DEFAULT_ADDRESS);
     void reset();
 
@@ -183,7 +197,7 @@ class RoverRally
     void waitForButtonPress();
     void waitForHeading(float toHead);
     void waitForTime(uint32_t val);
-    void waitForTicks(uint32_t numTicks);
+    void waitForTicks(int32_t numTicks);
     void waitForDistance(float dist);
     void waitForCustom();
 
@@ -212,11 +226,11 @@ class RoverRally
 
     int calcThrottleAbsOffset(int val);
 
-    uint32_t getMarkedTick() { return _lastWheelEncoderCount; }
-    uint32_t markCurrentTicks() {_lastWheelEncoderCount = _wheel_encoder_counter; return _lastWheelEncoderCount;}
-    uint32_t getCurrentTicks() {return (_wheel_encoder_counter - _lastWheelEncoderCount);}
-    uint32_t getTotalTicks() {return _wheel_encoder_counter;}
-    void setTotalTicks(uint32_t val) {_wheel_encoder_counter = val;}
+    int32_t getMarkedTick() { return _lastWheelEncoderCount; }
+    int32_t markCurrentTicks() {_lastWheelEncoderCount = _wheel_encoder_counter; return _lastWheelEncoderCount;}
+    int32_t getCurrentTicks() {return (_wheel_encoder_counter - _lastWheelEncoderCount);}
+    int32_t getTotalTicks() {return _wheel_encoder_counter;}
+    void setTotalTicks(int32_t val) {_wheel_encoder_counter = val;}
     
     uint8_t getState() {return _state;}
     uint8_t getMode() {return _curMode;}
@@ -234,8 +248,13 @@ class RoverRally
 
     void (*_updateCB)(int);
 
-    Servo _throttleServo; 
-    Servo _steeringServo;
+    #ifdef USE_TICO_SERVO
+        Adafruit_TiCoServo _throttleServo;
+        Adafruit_TiCoServo _steeringServo;
+    #else
+        Servo _throttleServo; 
+        Servo _steeringServo;
+    #endif
 
     int _buttonPin;
     int _ledPin;
@@ -259,6 +278,7 @@ class RoverRally
     uint32_t _steer_adj_time;
     uint32_t _moveCheckTime;
 
+    bool _isI2Csetup;
     bool _obstacleOverride;
     bool _slowOn;
     bool _hardTurnOn;
@@ -288,9 +308,9 @@ class RoverRally
     uint8_t _curMode;
     uint8_t _state;
 
-    uint32_t _lastWheelEncoderCount;
-    uint32_t _updateWheelEncoderCount;
-    uint32_t _moveCheckCount;
+    int32_t _lastWheelEncoderCount;
+    int32_t _updateWheelEncoderCount;
+    int32_t _moveCheckCount;
 
     float _ticks_per_distance;
     float _x_pos;
@@ -303,7 +323,7 @@ class RoverRally
     float _wp_path_y[WP_PATH_SIZE];
     float _wp_path_t[WP_PATH_SIZE];
 
-    uint32_t _wheel_encoder_counter;
+    int32_t _wheel_encoder_counter;
 };
 
 #endif

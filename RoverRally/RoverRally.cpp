@@ -1,8 +1,11 @@
 /* BNO/MPU Rover Code
- by Ted Meyers (5/19/2015)
+ by Ted Meyers (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
+
+ Copyright (c) 2016, Ted Meyers
+
+ license: Cola-Ware - Use this code however you'd like. If you 
+ find it useful you can buy me a Coke some time.
 
  IMPORTANT: Go to RoverRally.h and set the gyro type to be use.  This
             setting gets compiled in, and you have to pick one.
@@ -20,6 +23,7 @@ RoverRally::RoverRally()
 
   _updateCB = 0;
 
+  _isI2Csetup = false;
   _start_time = 0;
   _imu_update_time = 0;
   _steer_adj_time = 0;
@@ -63,15 +67,48 @@ void RoverRally::setThrottleValues(int center, int minFwd, int minRev,int min, i
   _th_scale = scale;
 }
 
+int RoverRally::setupI2C(int address) {
+  if (_isI2Csetup) return 1;
+
+  // Initialise the IMU sensor
+  int status = 0;
+  #ifdef USE_MPU
+    _xyz_imu.setupI2C();
+    status = (_xyz_imu.setup(address))?0:1;
+  #endif
+  #ifdef USE_BNO
+    _xyz_imu.setupI2C();
+    if (!_xyz_imu.setup(address)) {
+      status = 0;
+    } else {
+      _xyz_imu.setMode(XYZ_BNO055::IMU);  // IMU or NDOF
+      status = 1;      
+    }
+  #endif
+
+  if (status == 1) {
+    _isI2Csetup = true;
+  }
+
+  return status;
+}
+
 
 int RoverRally::setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int address) {
   _buttonPin = btnPin;
   _ledPin = ledPin;
 
-  _throttleServo.attach(thrPin);
-  _steeringServo.attach(steerPin);
+  #ifdef USE_TICO_SERVO
+    _throttleServo.attach(thrPin, SERVO_MIN, SERVO_MAX);
+    _steeringServo.attach(steerPin, SERVO_MIN, SERVO_MAX);
+  #else
+    _throttleServo.attach(thrPin);
+    _steeringServo.attach(steerPin);
+  #endif
+
+  int steer_val = map(_steer_center, _steer_min, _steer_max, SERVO_MIN, SERVO_MAX);
   _throttleServo.write(_th_center); 
-  _steeringServo.write(_steer_center); 
+  _steeringServo.write(steer_val); 
  
   // Initialise the IMU sensor
   int status = 0;
@@ -93,6 +130,7 @@ int RoverRally::setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int
   pinMode(_ledPin, OUTPUT);
   digitalWrite(_ledPin, LOW);
   
+  int status = setupI2C(address);
   return status;
 }
 
@@ -126,8 +164,9 @@ void RoverRally::reset() {
   resetPosition();
   resetHeading();
 
+  int steer_val = map(_steer_center, _steer_min, _steer_max, SERVO_MIN, SERVO_MAX);
   _throttleServo.write(_th_center); 
-  _steeringServo.write(_steer_center);
+  _steeringServo.write(steer_val);
   _start_time = millis();
 }
 
@@ -189,7 +228,6 @@ void RoverRally::backup(bool isTurn, bool isLeft, float angleDist) {
   int dir = _steerDir;
   bool isOverride = _throttleOverride;
   _throttleOverride = true;
-  _isReverse = true;
   brakeStop(50);
 
   _slowThrottle = throttle;
@@ -204,7 +242,6 @@ void RoverRally::backup(bool isTurn, bool isLeft, float angleDist) {
   waitForTime(400);
 
   if (isTurn) _steerDir = dir;
-  _isReverse = false;
   _throttleOverride = isOverride;
   _obstacleOverride = false;
   _slowThrottle = slow;
@@ -374,12 +411,10 @@ void RoverRally::waitForCustom(bool (*customWaitPtr)()) {
 void RoverRally::waitForButtonPress() {
   _state = STATE_BTN;
 
-  uint8_t stats[4];
-
   uint32_t time = millis();
   int curBtn = digitalRead(_buttonPin);
   while (digitalRead(_buttonPin) == curBtn) {
-    if ((millis() - time) > 100) {
+    if ((millis() - time) > 200) {
       updateCalibrationLED();
       time = millis();
     }
@@ -406,13 +441,19 @@ void RoverRally::waitForTime(uint32_t msecs) {
   }
   _state = STATE_NONE;
 }
-void RoverRally::waitForTicks(uint32_t numTicks) {
+void RoverRally::waitForTicks(int32_t numTicks) {
   _state = STATE_DIST;
   updateAll();  
   markCurrentTicks();
   updateAll();
-  while (getCurrentTicks() < numTicks) {
-    updateAll();
+  if (numTicks > 0) {
+    while (getCurrentTicks() < numTicks) {
+      updateAll();
+    }
+  } else if (numTicks < 0) {
+    while (getCurrentTicks() > numTicks) {
+      updateAll();
+    }    
   }
   _state = STATE_NONE;
 }
@@ -430,6 +471,7 @@ void RoverRally::updateAllBasic() {
   if ((millis() - _imu_update_time) >= 10) {
     _imu_update_time = millis();
     #ifdef USE_BNO
+      _xyz_imu.readHeading();
       _curMagHeading = normalizeDeg180(_xyz_imu.readHeading());
       _curRelHeading = normalizeDeg180(_curMagHeading - _startMagHeading);
     #endif
@@ -439,19 +481,20 @@ void RoverRally::updateAllBasic() {
       _curRelHeading = normalizeDeg180(_curMagHeading - _startMagHeading);
     #endif
 
+    updatePosition();      
     updateSteering();
     updateThrottle();
-    updatePosition();      
   }
 
   #ifdef CHECK_FOR_STOP
   // ----------------------------------------------
   if ((millis() - _moveCheckTime) > 200) {
     _moveCheckTime = millis();
-    uint32_t c = _wheel_encoder_counter;
+    int32_t c = _wheel_encoder_counter;
 
     if ((_curThrottle != _th_center) && ((millis() - _start_time) > 500)) {
-      _stoppedFlag = ((c - _moveCheckCount) < 10);
+      int32_t d = (c - _moveCheckCount);
+      _stoppedFlag = (d > -10) && (d < 10);
       #ifdef SET_OBSTACLE_OVERRIDE
       if (_stoppedFlag) _obstacleOverride = true;      
       #endif
@@ -472,7 +515,7 @@ void RoverRally::updateCalibrationLED() {
   #ifdef USE_BNO
     uint8_t stats[4];
     readCalibrationStats(stats);
-    b = (stats[0]==3); //((stats[0]==3) && (stats[1]==3) && (stats[3]==3));
+    b = (stats[1]==3); //((stats[0]==3) && (stats[1]==3) && (stats[3]==3));
   #endif
   #ifdef USE_MPU
     static float cal1 = 0.0;
@@ -484,16 +527,13 @@ void RoverRally::updateCalibrationLED() {
 }
 
 void RoverRally::updatePosition() {
-  if (_updateWheelEncoderCount < _wheel_encoder_counter) {
+  if (_updateWheelEncoderCount != _wheel_encoder_counter) {
     float h = _curRelHeading * DEG_TO_RAD;
     float d = (_wheel_encoder_counter - _updateWheelEncoderCount) / _ticks_per_distance;
-    if (_isReverse) d *= -1.0;
     _x_pos += d * cos(h);
     _y_pos += d * sin(h);
     _updateWheelEncoderCount = _wheel_encoder_counter;
-
-  } else if (_updateWheelEncoderCount > _wheel_encoder_counter) {
-    _updateWheelEncoderCount = _wheel_encoder_counter;
+    _isReverse = (d < 0);
   }
 }
 
@@ -558,7 +598,8 @@ void RoverRally::adjustThrottle() {
 }
 void RoverRally::adjustSteering() {
   if (_curSteer != _toSteer) {
-    _steeringServo.write(_toSteer);
+    int steer_val = map(_toSteer, _steer_min, _steer_max, SERVO_MIN, SERVO_MAX);
+    _steeringServo.write(steer_val);
     _curSteer = _toSteer;
   }
 }

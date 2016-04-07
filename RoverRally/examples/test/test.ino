@@ -1,9 +1,11 @@
 /* BNO/MPU Rover Code
- by Ted Meyers (5/19/2015)
+ by Ted Meyers (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
- 
- license: Beerware - Use this code however you'd like. If you 
- find it useful you can buy me a beer some time.
+
+ Copyright (c) 2016, Ted Meyers
+
+ license: Cola-Ware - Use this code however you'd like. If you 
+ find it useful you can buy me a Coke some time.
 
  IMPORTANT: Define USE_MPU or USE_BNO below!
             and also in RoverRally.h!
@@ -33,13 +35,13 @@
 // Throttle      - 4
 // Steering      - 5
 // Button        - 7
-// Wheel Encoder - 11 - (This must match port - take care if changing)
-//                      (See PinChangeInterrupt Library)
+// Wheel Encoder - 8,9
 // LED           - 13
 #define THR_PIN 4
 #define STR_PIN 5
+#define WE_A_PIN 8
+#define WE_B_PIN 9
 #define BTN_PIN 10
-#define WE_PIN  11
 #define LED_PIN 13
 // ---------------------------------------------------------------
 //
@@ -66,15 +68,16 @@
 #include <Servo.h> 
 
 // ----------------------------
-// PinChangeInterrupt Library
-// Make sure the ports match the pins used!
+// Wheel Encoder Library
 // ----------------------------
-#define NO_PORTC_PINCHANGES
-#define NO_PORTD_PINCHANGES
-#define NO_PIN_STATE
-#define NO_PIN_NUMBER
-#define DISABLE_PCINT_MULTI_SERVICE
-#include <PinChangeInt.h>
+//#define USE_SINGLE_ENC
+#ifdef USE_SINGLE_ENC
+  #include "XYZ_SingleEncoder.h"
+  XYZ_SingleEncoder myEnc(WE_A_PIN);                 // Pin 8 on portB
+#else
+  #include "XYZ_QuadratureEncoder.h"
+  XYZ_QuadratureEncoder myEnc(WE_A_PIN, WE_B_PIN);  // Uses DIO pins 8 and 9 (on portB)
+ #endif
 
 // ----------------------------
 // IMU headers
@@ -93,17 +96,10 @@
 
 // Global Objects...
 RoverRally myRover;              // The rover object (controls the rover)
-volatile uint32_t _wheel_encoder_counter;    // The number of wheel ticks
-uint32_t myStartTime = 0;                    // Startup time (last reset)
+uint32_t myStartTime = 0;        // Startup time (last reset)
 
 
 void setup(void) { 
-  //
-  // Setup Wheel Encoder interrupt
-  //
-  pinMode(WE_PIN, INPUT_PULLUP);
-  PCintPort::attachInterrupt(WE_PIN, wheel_encoder_tick, CHANGE);
-
   //
   // Setup I2C (IMU/gyro interface)
   //
@@ -147,7 +143,7 @@ void setup(void) {
   #ifdef SERIAL_OUT
     Serial.println(F("RoverRally Test Ready..."));
   #endif
-  reset();
+  resetAll();
 }
 
 void loop(void) 
@@ -159,7 +155,7 @@ void loop(void)
     Serial.println(F("RoverRally Test Go!"));
   #endif
   
-  reset();
+  resetAll();
   myRover.setSlowThrottlePercent(0.60*SPEED);
   myRover.setThrottlePercent(SPEED);
   drive();
@@ -167,8 +163,8 @@ void loop(void)
 
 // D_1, D_2 are distances in feet
 // Speed is in throttle percent
-#define D_1 10.0
-#define D_2 5.0
+#define D_1 20.0
+#define D_2 10.0
 
 // Drive a rectangle
 void drive() {
@@ -194,7 +190,7 @@ void drive() {
 // Update function -- does all the updating work when called
 void updateCallback(int state) {
   static uint32_t updateTime = 0;   // Time of last update
-  uint32_t ticks = update_wheel_encoder();
+  int32_t ticks = update_wheel_encoder();
   myRover.updateAllBasic();
   
   if ((millis() - updateTime) > 200) {
@@ -225,39 +221,29 @@ void updateCallback(int state) {
 }
 
 // Reset the rover, this is mostly about the wheel encoder ticks
-void reset() {
+void resetAll() {
   set_wheel_encoder(0);
   myRover.setTotalTicks(0);
   myRover.reset();
+  myEnc.reset();
   myStartTime = millis();
 }
 
 // Update ticks in the rover
-uint32_t update_wheel_encoder() {
-  uint32_t ticks = get_wheel_encoder();
+int32_t update_wheel_encoder() {
+  int32_t ticks = myEnc.get_encoder_count();
   myRover.setTotalTicks(ticks);
   return ticks;
 }
 
 // Safely set the wheel encoder tick value
-void set_wheel_encoder(uint32_t ticks) {
-  noInterrupts();
-  _wheel_encoder_counter = ticks;
-  interrupts();  
+void set_wheel_encoder(int32_t ticks) {
+  myEnc.set_encoder(ticks);
   myRover.setTotalTicks(ticks);
 }
 
 // Get the wheel encoder tick value safely
-uint32_t get_wheel_encoder() {
-  uint32_t ticks;
-  noInterrupts();
-  ticks = _wheel_encoder_counter;
-  interrupts();
+int32_t get_wheel_encoder() {
+  int32_t ticks = myEnc.get_encoder_count();
   return ticks;
-}
-
-// Encoder pin change callback
-// Gets called when the wheel encoder pin changes
-void wheel_encoder_tick() {
-  _wheel_encoder_counter++;
 }
