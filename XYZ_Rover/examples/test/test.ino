@@ -14,36 +14,51 @@
 // THE FOLLOWING VALUES MAY NEED TO BE ADJUSTED FOR YOUR BOT!
 // ----------------------------------------------------------
 // Only define one of these... 
-// And change in xYZ_Rover.h also!
+// IMPORTANT (REQUIRED): Change in xYZ_Rover.h ALSO!
 // ----------------------------
-//#define USE_MPU
-#define USE_BNO
+#define IMU_TYPE 1
+#if (IMU_TYPE == 0)
+  #define USE_MPU
+#else
+  #define USE_BNO
+#endif
 // ----------------------------
+
+// ----------------------------
+// Quadrature vs Single Wheel Encoder
+#define ENC_TYPE 1
+#if (ENC_TYPE == 0)
+  #define USE_SINGLE_ENC
+#else
+  #define USE_QUADRATURE_ENC
+#endif
+// ----------------------------
+
+// These are the arduino digital I/O pins used:
+// Wheel Encoder - 6,7 (0-7 required if using PORT D on EnableInterrupts library)
+// Steering      -  9  (9 or 10 required if using TicoServo library)
+// Throttle      - 10  (9 or 10 required if using TicoServo library)
+// Button        - 11  (Can be any digital IO pin)
+// LED           - 13  (13 is the on board led on arduino)
+#define WE_A_PIN 6
+#define WE_B_PIN 7
+#define STR_PIN  9
+#define THR_PIN 10
+#define BTN_PIN 11
+#define LED_PIN 13
+
+// Wheel encoder distance (your value my be a lot different)
+// This is a float type value
+#define TICKS_PER_FOOT 27.1
 
 // Car throttle speed
 #define SPEED 30.0
-
-// Wheel encoder distance (your value my be a lot different)
-#define TICKS_PER_FOOT 20
 
 // Throttle and steering values:
 #define STEER_CENTER 89
 #define THROTTLE_CENTER 1502
 #define THROTTLE_MIN_FWD 73
 #define THROTTLE_MIN_REV 185
-
-// These are the arduino digital I/O pins used:
-// Throttle      - 4
-// Steering      - 5
-// Button        - 7
-// Wheel Encoder - 8,9
-// LED           - 13
-#define THR_PIN 4
-#define STR_PIN 5
-#define WE_A_PIN 8
-#define WE_B_PIN 9
-#define BTN_PIN 10
-#define LED_PIN 13
 // ---------------------------------------------------------------
 //
 // Serial out defines: uncomment to test
@@ -71,7 +86,6 @@
 // ----------------------------
 // Wheel Encoder Library
 // ----------------------------
-//#define USE_SINGLE_ENC
 #ifdef USE_SINGLE_ENC
   #include "XYZ_SingleEncoder.h"
   XYZ_SingleEncoder myEnc(WE_A_PIN);                 // Pin 8 on portB

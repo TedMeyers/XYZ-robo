@@ -66,6 +66,11 @@ void loop(void)
   }
 
  // Print out values
+ //
+ // Heading is adjusted for the calibrated initial heading
+ // Yaw is a raw heading value
+ // -- Heading is the value that you want to use --
+ //
  if ((millis() - out_time) >= 200) {
     mpu.updateYPR();
     Serial.print("H: ");

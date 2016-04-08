@@ -1,4 +1,4 @@
-/* XYZ Wheel Encoder Library
+/* XYZ Quadrature Wheel Encoder Library
  by Ted Meyers (4/4/2016)
  https://github.com/TedMeyers/XYZ-robo
 

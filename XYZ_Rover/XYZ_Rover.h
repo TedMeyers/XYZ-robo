@@ -19,13 +19,27 @@
 // This defines the type of
 // gyro to use (MPU605 or BNO-055)
 //
+// BNO is preferred!
+//
 // Only define one of these!
 // --------------------------------
-//#define USE_MPU
-#define USE_BNO
+#define IMU_TYPE 1
+#if (IMU_TYPE == 0)
+  #define USE_MPU
+#else
+  #define USE_BNO
+#endif
 // ----------------------------
 
-#define USE_TICO_SERVO
+// ----------------------------
+// Servo library used (Tico is preferred)
+#define SERVO_TYPE 1
+#if (SERVO_TYPE == 0)
+  #define USE_STD_SERVO
+#else
+  #define USE_TICO_SERVO
+#endif
+// ----------------------------
 
 // ----------------------------
 // define to have the code set the stop flag (if stopped)
@@ -33,7 +47,6 @@
 // define to have the code set the obstacle override flag if stopped flag is set
 //#define SET_OBSTACLE_OVERRIDE
 // ----------------------------
-
 
 #if (ARDUINO >= 100)
  #include "Arduino.h"

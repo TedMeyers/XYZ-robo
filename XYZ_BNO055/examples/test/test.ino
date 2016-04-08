@@ -31,9 +31,9 @@ void setup(void)
   Serial.println("BNO055 Sensor Test"); Serial.println("");
   
   // Initialise the sensor
-  while (!bno.setup(BNO055_ADDRESS_B))
+  while (!bno.setup(BNO055_ADDRESS_A))
   {
-    Serial.print("No BNO055 found");
+    Serial.println("No BNO055 found");
     delay(1000);
   }
   Serial.print("BNO055 found");
@@ -82,7 +82,7 @@ void calibrate() {
   Serial.println("Cal: No=0, full=3");
 
   uint8_t stats[4];
-  for (int i=0; i<60; i++) {
+  for (int i=0; i<10; i++) {
     bno.readCalibration(stats);
     if ((stats[0]==3) && (stats[1]==3) && (stats[3]==3)) {
       break;

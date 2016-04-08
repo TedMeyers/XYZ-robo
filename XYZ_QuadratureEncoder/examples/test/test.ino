@@ -9,6 +9,9 @@
 */
 #include <XYZ_QuadratureEncoder.h>
 
+ // NOTE: On my setup there are about 54.0 ticks per foot,
+ // but your setup may be very different.
+
 XYZ_QuadratureEncoder enc(6, 7);  // Uses DIO pins 6 & 7 (on port D)
 
 void setup() {
