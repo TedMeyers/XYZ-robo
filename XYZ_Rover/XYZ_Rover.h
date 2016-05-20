@@ -9,6 +9,8 @@
 
  IMPORTANT: Define USE_MPU or USE_BNO below!
 
+ This library contains most of the necessary features for creating
+ an autonomous rover.
 */
 #ifndef _XYZ_ROVER_H__
 #define _XYZ_ROVER_H__
@@ -23,23 +25,104 @@
 //
 // Only define one of these!
 // --------------------------------
-#define IMU_TYPE 1
+//
+// MPU = Type 0,
+// BNO = Type 1
+//
+#define IMU_TYPE 0
 #if (IMU_TYPE == 0)
   #define USE_MPU
 #else
   #define USE_BNO
 #endif
+
+//#define USE_PRINT_CB
+
+// -----------------------------------------------------
+// The following flags determine if or how
+// the RC transmitter can be used to enable
+// or disable the rover.
+//
+// USE_RX_MUX: enables multiplexer capability (being able to
+// turn off auto-driver and turn on RC control).
+// See XYZ_RoverMux for disable/enable on valid Tx signal.
+// -----------------------------------------------------
+#define USE_RX_MUX 0
+
+// If USE_RX_MUX is 0 (false) the following are valid:
+// -----------------------------------------------------
+// USE_RX_AUX_DISABLE: disables auto-driving when the
+// auziliary channel is switched high. Also, set 
+// USE_RX_SIGNAL_DISABLE to 1 to only allow auto when
+// valid tx signal, or 0 to allow regardless.
+//
+// USE_RX_SIGNAL_DISABLE: disables auto-driving when the
+// transmitter is turned on.
+// Personally, I like 1/0; Competition == 1/1
+// -----------------------------------------------------
+#define USE_RX_AUX_DISABLE 0
+#define USE_RX_SIGNAL_DISABLE 1
+// -----------------------------------------------------
+
+// ----------------------------
+#if (ARDUINO >= 100)
+ #include "Arduino.h"
+#else
+ #include "WProgram.h"
+#endif
+// ----------------------------
+
+#ifdef USE_MPU
+  #include "XYZ_MPU6050.h"
+  #define DEFAULT_ADDRESS MPU6050_ADDRESS_B
+  #define IMU_ADDR MPU6050_ADDRESS_A
+#endif
+#ifdef USE_BNO
+  #include "XYZ_BNO055.h"
+  #define DEFAULT_ADDRESS BNO055_ADDRESS_B
+  #define IMU_ADDR BNO055_ADDRESS_A
+#endif
+
+#if (USE_RX_MUX)
+  #include "XYZ_RoverMux.h"
+#endif
+#include "XYZ_RxDecoder.h"
+#include "XYZ_RoverServos.h"
+#include "XYZ_WheelEncoder.h"
+#include "XYZ_Button.h"
+#include "XYZ_LED.h"
 // ----------------------------
 
 // ----------------------------
-// Servo library used (Tico is preferred)
-#define SERVO_TYPE 1
-#if (SERVO_TYPE == 0)
-  #define USE_STD_SERVO
-#else
-  #define USE_TICO_SERVO
-#endif
+// The following are TUNING PARAMETERS that may need to be adjusted!
+// ---------------------------- 
+#define SLOW_THROTTLE_PERCENT 20
+#define NORMAL_THROTTLE_PERCENT 40
+#define REVERSE_THROTTLE_PERCENT 0
+
+// These values are good: 1.1, 0.3, 0.1
+ // Or maybe better: 2.4, 0.3, 0.6
+#define STEERING_P 2.4
+#define STEERING_I 0.3
+#define STEERING_D 0.6
+#define STEERING_I_CUTOFF 5
+#define STEERING_I_LIMIT 60
+
+#define HEADING_THRESHOLD 10.0
+#define HARD_TURN_THRESH_DEG 15.0
 // ----------------------------
+// END TUNING PARAMETERS!
+// ----------------------------
+
+// WP_THRESH_FT should be less than WP_FOLLOW_OFFSET_FT
+#define DEFAULT_WP_THRESH_FT 11.0
+#define DEFAULT_WP_FOLLOW_OFFSET_FT 12.0
+
+#define DEFAULT_THROTTLE_CENTER_PERCENT 0
+#define DEFAULT_STEERING_CENTER_ANGLE -18
+
+#define IMU_UPDATE_TIME_MS 10
+#define SERVO_ADJ_TIME_MS 10
 
 // ----------------------------
 // define to have the code set the stop flag (if stopped)
@@ -48,75 +131,31 @@
 //#define SET_OBSTACLE_OVERRIDE
 // ----------------------------
 
-#if (ARDUINO >= 100)
- #include "Arduino.h"
-#else
- #include "WProgram.h"
-#endif
- 
-#ifdef USE_TICO_SERVO
-   #include "Adafruit_TiCoServo.h"
-#else
-   #include "Servo.h"
-#endif
+// The following are various state values.
+//
+#define STEERING_MODE_CLOSEST 0
+#define STEERING_MODE_LEFT 1
+#define STEERING_MODE_RIGHT 2
 
-#ifdef USE_MPU
-  #include "XYZ_MPU6050.h"
-  #define DEFAULT_ADDRESS MPU6050_ADDRESS_A
-#endif
-#ifdef USE_BNO
-  #include "XYZ_BNO055.h"
-  #define DEFAULT_ADDRESS BNO055_ADDRESS_A
-#endif
+#define ACTION_STATE_NONE 0
+#define ACTION_STATE_STOP 1
+#define ACTION_STATE_DIST 2
+#define ACTION_STATE_WAYP 3
+#define ACTION_STATE_TURN 4
+#define ACTION_STATE_WAIT 5
+#define ACTION_STATE_BTN  6
+#define ACTION_STATE_CUST 7
+#define ACTION_STATE_sTOP 8
 
-// These are defined in arduino.h
-//#define RAD_TO_DEG 57.2957795
-//#define DEG_TO_RAD 0.0174532925
+#define ROVER_MODE_RUN 0
+#define ROVER_MODE_AUTO_HOLD 1
+#define ROVER_MODE_MANUAL_HOLD 2
+#define ROVER_MODE_ALL_HOLD 3
 
-#define SERVO_MIN 1000
-#define SERVO_MAX 2000
-
-#define DEFAULT_WP_THRESH 11.0
-#define DEFAULT_WP_FOLLOW_OFFSET 12.0
-
-#define DEFAULT_STEER_CENTER 90
-#define DEFAULT_STEER_MIN 55
-#define DEFAULT_STEER_MAX 125
-#define TURN_THRESH 15.0
-
-#define DEFAULT_THROTTLE_CENTER 1500
-#define DEFAULT_THROTTLE_MIN 1200
-#define DEFAULT_THROTTLE_MAX 1800
-#define DEFAULT_THROTTLE_MIN_FWD 80
-#define DEFAULT_THROTTLE_MIN_REV 185
-#define DEFAULT_THROTTLE_SCALE 2.0
-
-#define STEER_ADJ_TIME 10.0
-#define STEERING_P 1.2
-#define STEERING_I 0.3
-#define STEERING_D 0.1
-#define STEERING_I_CUTOFF 5
-#define STEERING_I_LIMIT 60
-#define STEERING_EPS 1
-#define HEADING_THRESHOLD 10.0
-
-#define STEER_CLOSEST 0
-#define STEER_LEFT 1
-#define STEER_RIGHT 2
-
-#define STATE_NONE 0
-#define STATE_STOP 1
-#define STATE_DIST 2
-#define STATE_WAYP 3
-#define STATE_TURN 4
-#define STATE_WAIT 5
-#define STATE_BTN  6
-#define STATE_CUST 7
-
-#define MODE_WAIT 0
-#define MODE_RUN 1
-
- #define WP_PATH_SIZE 40
+// This can be decreased if memory runs short;
+// it specifies the maximum number of waypoints allowed.
+ //
+#define WP_PATH_SIZE 40
 
 
 class XYZ_Rover
@@ -124,131 +163,151 @@ class XYZ_Rover
   public:
     XYZ_Rover();
 
+    #if (USE_RX_MUX)
+      XYZ_RoverMux *getMux() { return &_xyz_mux; }
+      XYZ_RxDecoder *getRx() { return _xyz_mux.getRx(); }
+      XYZ_RoverServos *getServos() { return _xyz_mux.getServos(); }
+
+      void setToSteeringAngle(int angle) { _xyz_mux.setToSteeringAngle(_steering_center_angle+angle); }
+      void setToThrottlePercent(int percent) { _xyz_mux.setToThrottlePercent(percent); }
+      void servoReset() { _xyz_mux.reset(); }
+    #else
+      XYZ_RxDecoder *getRx() { return &_xyz_rx; }
+      XYZ_RoverServos *getServos() { return &_xyz_servos; }
+
+      void setToSteeringAngle(int angle) { _xyz_servos.setToSteeringAngle(_steering_center_angle+angle); }
+      void setToThrottlePercent(int percent) { _xyz_servos.setToThrottlePercent(percent); }
+      void servoReset() { _xyz_servos.reset(); }
+    #endif
+
+    XYZ_WheelEncoder *getWheelEncoder() { return &_xyz_wheel_encoder; }
+    XYZ_Button *getButton() { return &_xyz_button; }
+    XYZ_LED *getLED() { return &_xyz_led; }
+
+    void setThrottleCenterPercent(float center_percent) { _throttle_center_percent = center_percent; }
+    void setSteeringCenterAngle(int center_angle) { _steering_center_angle = center_angle; }
+
     void setSteeringPID(float kp=STEERING_P, float ki=STEERING_I, float kd=STEERING_D);
-    void setSteeringValues(int center=DEFAULT_STEER_CENTER, int min=DEFAULT_STEER_MIN, int max=DEFAULT_STEER_MAX);
-    void setThrottleValues(int center=DEFAULT_THROTTLE_CENTER, 
-        int minFwd=DEFAULT_THROTTLE_MIN_FWD, int minRev=DEFAULT_THROTTLE_MIN_REV,
-        int min=DEFAULT_THROTTLE_MIN, int max=DEFAULT_THROTTLE_MAX, int scale=DEFAULT_THROTTLE_SCALE);
 
-    void setWaypointConstants(float thresh, float offset) {_wp_thresh=thresh; _wp_follow_offset=offset;}
-
+    void setWaypointConstantsFt(float thresh_ft, float offset_ft) {_wp_thresh_ft=thresh_ft; _wp_follow_offset_ft=offset_ft;}
 
     int setupI2C_IMU(int address=DEFAULT_ADDRESS);
-    int setupRover(int thrPin, int steerPin, int btnPin, int ledPin, int address=DEFAULT_ADDRESS);
     void reset();
 
     void setUpdateCB(void (*functionPtr)(int)) {_updateCB = functionPtr;}
 
-    void setTickToDistanceConversion(float val) {_ticks_per_distance = val;}
-    float convertTicksToDistance(int32_t ticks) {return ticks/_ticks_per_distance;}
-    int32_t convertDistanceToTicks(float d) {return (int32_t)(d*_ticks_per_distance);}
+    void setSlowThrottlePercent(int percent) { _slow_throttle_percent = percent; }
+    void setNormalThrottlePercent(int percent) { _normal_throttle_percent = percent; }
+    void setReverseThrottlePercent(int percent) { _reverse_throttle_percent = percent; }
 
-    void setStartHeading(float h) {_startMagHeading = h;}
-    float getCurrentMagHeading() {return _curMagHeading;}
-    float getCurrentHeading() {return _curRelHeading;}
-    void setToRelHeading(float h) {_toRelHeading = normalizeDeg360(h);}
-    void resetHeading() {_startMagHeading=_curMagHeading; _toRelHeading=_curMagHeading;}
+    void setTickToFeetConversion(float val_ft) {_ticks_per_ft = val_ft;}
+    float convertTicksToFeet(int32_t ticks) {return ticks/_ticks_per_ft;}
+    int32_t convertFeetToTicks(float d_ft) {return (int32_t)(d_ft*_ticks_per_ft);}
 
-    bool isStopped() {return _stoppedFlag;}
-    void setObstacleOverride(bool isOn) {_obstacleOverride = isOn;}
-    bool isObstacleOverride() {return _obstacleOverride;}
+    float getCurrentMagHeadingDeg() {return _cur_mag_heading_deg;}
+    float getCurrentHeadingDeg() {return _cur_rel_heading_deg;}
+    void setToHeadingDeg(float h_deg) {_to_rel_heading_deg = normalizeDeg360(h_deg);}
+    void resetHeadings();
 
-    void resetPosition() {_x_pos = 0.0; _y_pos = 0.0;}
-    void setPosition(float x, float y) {_x_pos = x; _y_pos = y;}
-    float getXPosition() {return _x_pos;}
-    float getYPosition() {return _y_pos;}
-    float getXWaypoint() {return _x_wp;}
-    float getYWaypoint() {return _y_wp;}
-    int getCurrentWaypointIndex() {return _c_wp;}
-    void addWaypointPath(float x, float y, float t) {setWaypointPath(_c_wp++, x, y, t);}
+    bool isStopped() {return _stopped_flag;}
+    void setObstacleOverride(bool isOn) {_obstacle_override_flag = isOn;}
+    bool isObstacleOverride() {return _obstacle_override_flag;}
+
+    void setToZeroPosition() {_x_pos_ft = 0.0; _y_pos_ft = 0.0;}
+    void setPositionFt(float x_ft, float y_ft) {_x_pos_ft = x_ft; _y_pos_ft = y_ft;}
+    float getXPositionFt() {return _x_pos_ft;}
+    float getYPositionFt() {return _y_pos_ft;}
+    float getXWaypointFt() {return _x_wp_ft;}
+    float getYWaypointFt() {return _y_wp_ft;}
+    void resetCurrentWaypointIndex() { _c_wp_idx = 1; }
+    int getCurrentWaypointIndex() {return _c_wp_idx;}
+    void addWaypointPathFt(float x_ft, float y_ft, float t_ft) {setWaypointPathFt(_c_wp_idx++, x_ft, y_ft, t_ft);}
     
     void clearWaypoints();
-    void setWaypointPath(int i, float x, float y, float t);
-    void moveWaypointPath(int i, float dx, float dy);
+    void setWaypointPathFt(int i, float x_ft, float y_ft, float t_ft);
+    void moveWaypointPathFt(int i, float dx_ft, float dy_ft);
 
-    void backupStraight(float dist) {backup(false, false, dist);}
-    void backupLeft(float angle) {backup(true, true, angle);}
-    void backupRight(float angle) {backup(true, false, angle);}
+    void brakeStop(int duration_ms);
+    void rollStop(int duration_ms);
 
-    void backAround(bool isLeft, float d1, float d2);
-    void backup(bool isTurn, bool isLeft, float angleDist);
-    void brakeStop(int duration);
-    void rollStop();
-
-    void setLeft() {setDirection(STEER_LEFT);}
-    void setRight() {setDirection(STEER_RIGHT);}
-    void setClosest() {setDirection(STEER_CLOSEST);}
-
-    void setReverse() {_isReverse = true;}
-    void setForward() {_isReverse = false;}
-    void setSlowThrottleOn(bool isOn) {_slowOn = isOn;}
-    void setSlowThrottlePercent(float percent) {_slowThrottle = calcThrottleFromPercent(percent);}
-    void setThrottlePercent(float percent) {_setThrottle = calcThrottleFromPercent(percent);}
+    void setSteeringModeDirection(uint8_t steering_mode_dir);
+    void setLeftTurnMode() {setSteeringModeDirection(STEERING_MODE_LEFT);}
+    void setRightTurnMode() {setSteeringModeDirection(STEERING_MODE_RIGHT);}
+    void setClosestTurnMode() {setSteeringModeDirection(STEERING_MODE_CLOSEST);}
 
     int calcThrottleFromPercent(float percent);
-    void setDirection(int dir);
  
-    void turnToLeft(float angle);
-    void turnToRight(float angle);
-    void turnToClosest(float heading);
+    void turnToLeftDeg(float angle_deg);
+    void turnToRightDeg(float angle_deg);
+    void turnToClosestDeg(float heading_deg);
     void setStraight();
-    void setLeftTurn(int angle);
-    void setRightTurn(int angle);
-    void setHeadingTurn(int hdg);
-    void setAngleTurn(int angle);
+    void setLeftTurnDeg(int angle_deg);
+    void setRightTurnDeg(int angle_deg);
+    void setAngleTurnDeg(int angle_deg);
 
-    float setToHeading(float toHead);
-    bool testToHeading(bool testNeg);
+    bool testToHeading(bool testNeg, float toHeadingDeg);
 
-    void driveWaypointPath() {driveWaypointPath(_c_wp-1);}
     void driveWaypointPath(int i);
-    void driveWaypointLine(float x0, float y0, float x1, float y1, float thresh);  // thresh is the slowdown threshold
+    void driveWaypointLineFt(float x0_ft, float y0_ft, 
+        float x1_ft, float y1_ft, float slow_thresh_ft);  // slow_thresh_ft is the slowdown threshold
 
-    void waitForWaypoint(float toX, float toY, float dist);
+    void waitForWaypointFt(float toX_ft, float toY_ft, float dist_ft);
+    bool checkForWaypointFt(float toX_ft, float toY_ft, float thresh_ft);
     void waitForCustom(bool (*customWaitPtr)());
     void waitForButtonPress();
-    void waitForHeading(float toHead);
-    void waitForTime(uint32_t val);
+    void waitForHeadingDeg(float toHead_deg);
+    void waitForTimeMs(uint32_t t_ms);
     void waitForTicks(int32_t numTicks);
-    void waitForDistance(float dist);
+    void waitForDistanceFt(float dist_ft);
     void waitForCustom();
 
     void updateAll();
     void updateAllBasic();
-    void adjustThrottle();
-    void adjustSteering();
-    void updateCalibrationLED();
-    void updateSteering();
-    void updateThrottle();
+
     void updatePosition();
-
-    int normalizeSteering(int amount);
-    int normalizeThrottle(int amount);
-
-    float normalizeDeg180(float h);
-    float normalizeDeg360(float heading);
-    float calcHeadingDiff(float cur, float to);
-
-    float getHeadingTo(float x, float y);
-    float getDistance(float x0, float y0, float x1, float y1);
-
-    float getDistanceFrom(float x, float y) {return getDistance(_x_pos, _y_pos, x, y);}
+    void updateIMU();
+    void updateServos();
+    void updateMux();
+    void updateCalibrationLED();
 
     void readCalibrationStats(uint8_t *stats);
 
-    int calcThrottleAbsOffset(int val);
-
-    int32_t getMarkedTick() { return _lastWheelEncoderCount; }
-    int32_t markCurrentTicks() {_lastWheelEncoderCount = _wheel_encoder_counter; return _lastWheelEncoderCount;}
-    int32_t getCurrentTicks() {return (_wheel_encoder_counter - _lastWheelEncoderCount);}
-    int32_t getTotalTicks() {return _wheel_encoder_counter;}
-    void setTotalTicks(int32_t val) {_wheel_encoder_counter = val;}
+    int32_t getMarkedTick() { return _last_wheel_encoder_cnt; }
+    int32_t markCurrentTicks() {_last_wheel_encoder_cnt = getTotalTicks(); return _last_wheel_encoder_cnt;}
+    int32_t getCurrentTicks() {return (getTotalTicks() - _last_wheel_encoder_cnt);}
+    int32_t getTotalTicks() {return getWheelEncoder()->getEncoderCount();}
+    void setTotalTicks(int32_t val) { getWheelEncoder()->setEncoderCount(val); }
+    void resetTotalTicks() { getWheelEncoder()->resetEncoderCount(); }
     
-    uint8_t getState() {return _state;}
-    uint8_t getMode() {return _curMode;}
-    void setModeRun() {_curMode = MODE_RUN;}
-    void setModeWait() {_curMode = MODE_WAIT;}
+    uint8_t getActionState() {return _rover_action_state;}
+    uint8_t getRoverMode() {return _rover_mode;}
+    void setRoverModeRun() { setRoverModeAutoHold(false); }
+    void setRoverModeHold() { setRoverModeAutoHold(true); }
+    void setRoverModeAutoHold(bool b);
+    void setRoverModeManualHold(bool b);
+    void updateRoverMode();
 
+    void updateSteeringAngle();
+    void updateThrottlePercent(int throttle_percent);
+    void updateThrottlePercent();
+
+    float normalizeDeg180(float h_deg);
+    float normalizeDeg360(float h_deg);
+    float calcHeadingDiffDeg(float cur_deg, float to_deg);
+    float calcHeadingDiff360Deg(float cur_deg, float to_deg);
+
+    float getHeadingToPosDeg(float x_ft, float y_ft);
+    float getDistanceFt(float x0_ft, float y0_ft, float x1_ft, float y1_ft);
+    float getDistanceFromFt(float x_ft, float y_ft) {return getDistanceFt(_x_pos_ft, _y_pos_ft, x_ft, y_ft);}
+
+
+    #ifdef USE_PRINT_CB
+        void (*printIntCB)(int);
+        void (*printLongCB)(long);
+        void (*printFloatCB)(float);
+        void (*printStringCB)(char *);
+        void (*printlnCB)(char *);
+    #endif
 
   private:
     #ifdef USE_MPU
@@ -258,84 +317,73 @@ class XYZ_Rover
         XYZ_BNO055 _xyz_imu;
     #endif
 
-    void (*_updateCB)(int);
+    void (*_updateCB)(int);         // Update callback function
 
-    #ifdef USE_TICO_SERVO
-        Adafruit_TiCoServo _throttleServo;
-        Adafruit_TiCoServo _steeringServo;
+    #if (USE_RX_MUX)
+       XYZ_RoverMux _xyz_mux;       // Throttle and steering servos (with mux) & wheel encoders
     #else
-        Servo _throttleServo; 
-        Servo _steeringServo;
+       XYZ_RxDecoder _xyz_rx;
+       XYZ_RoverServos _xyz_servos;
     #endif
+    XYZ_WheelEncoder _xyz_wheel_encoder;
+    XYZ_Button _xyz_button;         // Button
+    XYZ_LED _xyz_led;               // led
 
-    int _buttonPin;
-    int _ledPin;
+    float _throttle_center_percent;
+    int _steering_center_angle;
 
-    int _th_center;
-    int _th_minFwd;
-    int _th_minRev;
-    int _th_min;
-    int _th_max;
-    int _th_scale;
+    float _wp_thresh_ft;            // waypoint threshold in feet
+    float _wp_follow_offset_ft;     // waypoint follow distance in feet
 
-    int _steer_center;
-    int _steer_min;
-    int _steer_max;
+    uint32_t _start_time_ms;        // start of run
 
-    float _wp_thresh;           // waypoint threshold in feet
-    float _wp_follow_offset;    // waypoint follow distance in feet
+    bool _is_I2C_IMU_setup_flag;    // IMU setup flag (true iff IMU setup success)
+    bool _stopped_flag;             // Set when the wheel encoders are not changing
+    bool _obstacle_override_flag;   // Set when an obsstacle detected
+    bool _slow_flag;                // Set when rover needs to go slow
+    bool _hard_turn_flag;           // Set when rover needs to make a hard turn
+    bool _is_reverse_flag;          // Set when rover is backing up
+    bool _use_cur_throttle_flag;    // Set when current throttle is to be used instead of default
 
-    uint32_t _start_time;        // start of run
-    uint32_t _imu_update_time;   // sensor update time
-    uint32_t _steer_adj_time;
-    uint32_t _moveCheckTime;
+    int _cur_throttle_percent;      // Current throttle value (in percent)
+    int _slow_throttle_percent;     // Slow default throttle value (in percent)
+    int _normal_throttle_percent;   // Normal default throttle value (in percent)
+    int _reverse_throttle_percent;  // Reverse default throttle value (in percent)
 
-    bool _isI2C_IMU_setup;
-    bool _obstacleOverride;
-    bool _slowOn;
-    bool _hardTurnOn;
-    bool _isReverse;
-    bool _throttleOverride;
-    bool _stoppedFlag;  // Set when the wheel encoders are not changing
-    int _slowThrottle;  // Slow throttle to use (like when turning)
-    int _setThrottle;   // The last set throttle
-    int _toThrottle;    // The throttle to set to
-    int _curThrottle;   // The currently set throttle
-    int _toSteer;
-    int _curSteer;
-    int _steerDir;
+    float _start_mag_heading_deg;   // The starting heading (or heading at last reset -- used to calc _cur_rel_heading_deg)
+    float _cur_mag_heading_deg;     // The current magnetic heading from the IMU
+    float _cur_rel_heading_deg;     // Current heading used by rover, calculated from _start_mag_heading_deg and _cur_mag_heading_deg
+    float _last_rel_heading_deg;    // Last heading, used in steering PID loop (to update in turns)
+    float _to_rel_heading_deg;      // The heading to turn to
 
-    float _startMagHeading;
-    float _curMagHeading;
-    float _curRelHeading;
-    float _lastRelHeading;
-    float _toRelHeading;
-    float _headingChange;
-    float _steerInteg;
+    float _steer_integ;  // Steering PID control loop integral value
+    float _steering_Kp;  // Steering PID control loop constant (P)
+    float _steering_Ki;  // Steering PID control loop constant (I)
+    float _steering_Kd;  // Steering PID control loop constant (D)
 
-    float _steering_Kp;
-    float _steering_Ki;
-    float _steering_Kd;
+    bool _auto_hold_mode;           // Is auto hold enabled
+    bool _manual_hold_mode;         // Is manual hold enabled
+    uint8_t _rover_mode;            // Current rover mode (MANUAL_HOLD / AUTO_HOLD / RUN)
+    uint8_t _steering_mode;         // Steering mode (CLOSEST/LEFT/RIGHT)
+    uint8_t _rover_action_state;    // Internal state (current large scale action being performed)
 
-    uint8_t _curMode;
-    uint8_t _state;
+    int32_t _last_wheel_encoder_cnt;    // Encoder count for marking distances
+    int32_t _update_wheel_encoder_cnt;  // Encoder count at last position update
+    int32_t _move_check_cnt;            // Enc count for determining if rover is stopped/stuck
 
-    int32_t _lastWheelEncoderCount;
-    int32_t _updateWheelEncoderCount;
-    int32_t _moveCheckCount;
+    float _ticks_per_ft;  // Factor for converting encoder ticks to feet
+    float _x_pos_ft;      // Current X position of rover in feet
+    float _y_pos_ft;      // Current Y position of rover in feet
 
-    float _ticks_per_distance;
-    float _x_pos;
-    float _y_pos;
+    // Waypoint Values
+    float _x_wp_ft; // Current waypoint X position in feet
+    float _y_wp_ft; // Current waypoint Y position in feet
+    int _c_wp_idx;  // Current array index
+    float _wp_path_x_ft[WP_PATH_SIZE];  // X position of waypoints in feet
+    float _wp_path_y_ft[WP_PATH_SIZE];  // Y position of waypoints in feet
+    float _wp_path_t_ft[WP_PATH_SIZE];  // Threshold to waypoints in feet
 
-    int _c_wp;
-    float _x_wp;
-    float _y_wp;
-    float _wp_path_x[WP_PATH_SIZE];
-    float _wp_path_y[WP_PATH_SIZE];
-    float _wp_path_t[WP_PATH_SIZE];
-
-    int32_t _wheel_encoder_counter;
+    void waitForTimeMsInternal(uint32_t t_ms);
 };
 
 #endif

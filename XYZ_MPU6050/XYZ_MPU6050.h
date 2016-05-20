@@ -5,16 +5,21 @@
 
  license: Cola-Ware - Use this code however you'd like. If you 
  find it useful you can buy me a Coke some time.
+
+ This library read the values put out by the MPU 6050 6DOF IMU.
 */
 #ifndef __XYZ_MPU6050_H__
 #define __XYZ_MPU6050_H__
 
+// ----------------------------
 #if (ARDUINO >= 100)
  #include "Arduino.h"
 #else
  #include "WProgram.h"
 #endif
+// ----------------------------
 
+#include "Wire.h"
 #include "XMPU6050.h"
 
 //#define RAD_TO_DEG (57.295779513) // Defined in Arduino.h

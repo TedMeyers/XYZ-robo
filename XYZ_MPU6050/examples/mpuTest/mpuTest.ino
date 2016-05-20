@@ -6,6 +6,12 @@
 
  license: Cola-Ware - Use this code however you'd like. If you 
  find it useful you can buy me a Coke some time.
+
+ This sketch tests the MPU6050 6dof IMU.  Open a terminal
+ window at 115200 to see the results.
+ It should print out Heading and YPR values.
+
+ Uses Wire and I2Cdev libraries
 */
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -66,11 +72,6 @@ void loop(void)
   }
 
  // Print out values
- //
- // Heading is adjusted for the calibrated initial heading
- // Yaw is a raw heading value
- // -- Heading is the value that you want to use --
- //
  if ((millis() - out_time) >= 200) {
     mpu.updateYPR();
     Serial.print("H: ");

@@ -7,13 +7,6 @@
  license: Cola-Ware - Use this code however you'd like. If you 
  find it useful you can buy me a Coke some time.
 */
-#if ARDUINO >= 100
- #include "Arduino.h"
-#else
- #include "WProgram.h"
-#endif
-
-#include "Wire.h"
 #include "XYZ_MPU6050.h"
 
 

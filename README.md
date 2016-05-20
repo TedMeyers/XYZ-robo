@@ -29,5 +29,4 @@ Usage:
   4. Open Arduino IDE and then open the RoverRally/test sketch from Examples 
      (you will also need to choose USE_BNO or USE_MPU here).
 
-You will need to choose an IMU (the gyro -- is what the RoverRally library uses from the IMU, to get heading).  Be sure
-to define one of USE_BNO or USE_MPU in the RoverRally.h file. 
+You will need to choose an IMU (the gyro -- is what the RoverRally library uses from the IMU, to get heading).  Be sure to define one of USE_BNO or USE_MPU in the RoverRally.h file. 

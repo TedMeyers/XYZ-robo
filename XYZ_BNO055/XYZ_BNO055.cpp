@@ -13,13 +13,6 @@
  license: Cola-Ware - Use this code however you'd like. If you 
  find it useful you can buy me a Coke some time.
 */
-#if ARDUINO >= 100
- #include "Arduino.h"
-#else
- #include "WProgram.h"
-#endif
-
-#include "Wire.h"
 #include "XYZ_BNO055.h"
 
 /***************************************************************************
@@ -70,7 +63,7 @@ bool XYZ_BNO055::setup(uint8_t address) {
 
 void XYZ_BNO055::init() {
    uint8_t GPwrMode = NormalG;     // Gyro power mode
-   uint8_t Gscale = GFS_250DPS;    // Gyro full scale
+   uint8_t Gscale = GFS_125DPS;    // Gyro full scale
    uint8_t Gbw = GBW_23Hz;         // Gyro bandwidth
    uint8_t Ascale = AFS_2G;        // Accel full scale
    uint8_t APwrMode = NormalA;     // Accel power mode
@@ -79,7 +72,6 @@ void XYZ_BNO055::init() {
    uint8_t MPwrMode = Normal;      // Select magnetometer power mode
    uint8_t Modr = MODR_10Hz;       // Select magnetometer ODR when in BNO055 bypass mode
    uint8_t PWRMode = Normal;       // Select BNO055 power mode
-   uint8_t OPRMode = IMU;         // specify operation mode for sensors
 
    // Select BNO055 config mode
    writeByte(_address, BNO055_OPR_MODE, CONFIGMODE);
@@ -94,12 +86,15 @@ void XYZ_BNO055::init() {
    writeByte(_address, BNO055_TEMP_SOURCE, 0x01);  // Select BNO055 gyro temperature source 
    writeByte(_address, BNO055_UNIT_SEL, 0x01);     // Select BNO055 sensor units (temperature in degrees C, rate in dps, accel in mg)
    writeByte(_address, BNO055_PWR_MODE, PWRMode);  // Select BNO055 system power mode
-   writeByte(_address, BNO055_OPR_MODE, OPRMode);  // Select BNO055 system operation mode
+}
+
+uint8_t XYZ_BNO055::getMode() {
+  return readByte(_address, BNO055_OPR_MODE);
 }
 
 void XYZ_BNO055::setMode(uint8_t mode) {
   writeByte(_address, BNO055_OPR_MODE, mode);
-  delay(30);
+  delay(100);
 }
 
 uint8_t XYZ_BNO055::readCalibration(uint8_t *calstats) {

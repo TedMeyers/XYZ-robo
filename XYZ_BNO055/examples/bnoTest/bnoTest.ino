@@ -6,6 +6,11 @@
 
  license: Cola-Ware - Use this code however you'd like. If you 
  find it useful you can buy me a Coke some time.
+
+ This sketch tests the BO055 9DOF IMU.
+ It connects and the prints out the YPR and calibration values.
+
+ Uses the Wire and I2Cdev libraries.
 */
 #include <Wire.h>
 #include <XYZ_BNO055.h>
@@ -36,8 +41,15 @@ void setup(void)
     Serial.println("No BNO055 found");
     delay(1000);
   }
-  Serial.print("BNO055 found");
-  bno.setMode(XYZ_BNO055::NDOF);
+  Serial.println("BNO055 found");
+
+  int mod = bno.getMode();
+  Serial.print("Mode: ");
+  Serial.println(mod);
+  bno.setMode(XYZ_BNO055::IMU);
+  mod = bno.getMode();
+  Serial.print("Mode: ");
+  Serial.println(mod);
 
   calibrate();
 
@@ -73,7 +85,7 @@ void loop(void)
     Serial.print(stats[3]); Serial.print("  ");
     Serial.println();
      
-    digitalWrite(myLed, !digitalRead(myLed));
+    digitalWrite(myLed, (stats[2]==3));
     out_time = millis();
   }
 }

@@ -12,16 +12,21 @@
 
  license: Cola-Ware - Use this code however you'd like. If you 
  find it useful you can buy me a Coke some time.
+
+ This library reads the values put out by the BNO055 9DOF IMU.
 */
 #ifndef __XYZ_BNO055_H__
 #define __XYZ_BNO055_H__
 
+// ----------------------------
 #if (ARDUINO >= 100)
  #include "Arduino.h"
 #else
  #include "WProgram.h"
 #endif
+// ----------------------------
 
+#include "Wire.h"
 #include "I2Cdev.h"
 
 // BNO055 Register Map
@@ -262,6 +267,7 @@ class XYZ_BNO055
     bool setup(uint8_t address=BNO055_ADDRESS_B);
     void init();
 
+    uint8_t getMode() ;
 
     void setMode(uint8_t);
     void readYPR(float *);
