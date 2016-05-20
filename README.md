@@ -2,12 +2,15 @@
 Arduino robotics code (Libraries)
 
 - XYZ_Rover: Library to assist in IMU(gyro) and wheel-encoder based rovers (built on an RC-car chassis)
-      Optionally uses the TiCoServer library
-- XMPU6050: Library for the MPU6050 IMU (from https://github.com/jrowberg/i2cdevlib) included here for convenience
 - XYZ_MPU6050: Library used to interface with XMPU6050.  NOTE: uses the stripped down MPU6050 library (see above).
 - XYZ_BNO055: Library for the Bosch BNO-055 IMU
-- XYZ_Single_Encoder - Library for using Single Wheel Encoders.  NOTE: uses the EnableInterrupts library
-- XYZ_Quadrature_Encoder - Library for using Quadrature Wheel Encoders.  NOTE: uses the EnableInterrupts library
+- XYZ_WheelEncoder - Library for using  Wheel Encoders (single or quadrature).  NOTE: uses the EnableInterrupts library
+- XYZ_Mux: Library for using an RC transmitter/Reciever and multiplexing the input (manual tx or microcontroller auto mode)
+- XYZ_Rover_Servo: Library for using hobby servos (Optionally uses the TiCoServo library)
+- XYZ_RxDecoder: Library for decoding signals from a RC receiver.
+- XYZ_Button: Library for using buttons
+- XYZ_LED: Library for using LEDs
+- XYZ_Interrupts: Library for using microcontroller interrupts (really just an interface to EnableInterrupts library)
 
 Other libraries optionally used:
 - EnableInterrupts: https://github.com/GreyGnome/EnableInterrupt
