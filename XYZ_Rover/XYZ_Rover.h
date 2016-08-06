@@ -61,7 +61,7 @@
 // Personally, I like 1/0; Competition == 1/1
 // -----------------------------------------------------
 #define USE_RX_AUX_DISABLE 0
-#define USE_RX_SIGNAL_DISABLE 1
+#define USE_RX_SIGNAL_DISABLE 0
 // -----------------------------------------------------
 
 // ----------------------------
@@ -184,7 +184,7 @@ class XYZ_Rover
     XYZ_Button *getButton() { return &_xyz_button; }
     XYZ_LED *getLED() { return &_xyz_led; }
 
-    void setThrottleCenterPercent(float center_percent) { _throttle_center_percent = center_percent; }
+    void setThrottleCenterPercent(int center_percent) { _throttle_center_percent = center_percent; }
     void setSteeringCenterAngle(int center_angle) { _steering_center_angle = center_angle; }
 
     void setSteeringPID(float kp=STEERING_P, float ki=STEERING_I, float kd=STEERING_D);
@@ -234,16 +234,14 @@ class XYZ_Rover
     void setLeftTurnMode() {setSteeringModeDirection(STEERING_MODE_LEFT);}
     void setRightTurnMode() {setSteeringModeDirection(STEERING_MODE_RIGHT);}
     void setClosestTurnMode() {setSteeringModeDirection(STEERING_MODE_CLOSEST);}
-
-    int calcThrottleFromPercent(float percent);
  
     void turnToLeftDeg(float angle_deg);
     void turnToRightDeg(float angle_deg);
     void turnToClosestDeg(float heading_deg);
     void setStraight();
-    void setLeftTurnDeg(int angle_deg);
-    void setRightTurnDeg(int angle_deg);
-    void setAngleTurnDeg(int angle_deg);
+    void setLeftTurnDeg(float angle_deg);
+    void setRightTurnDeg(float angle_deg);
+    void setAngleTurnDeg(float angle_deg);
 
     bool testToHeading(bool testNeg, float toHeadingDeg);
 
@@ -329,13 +327,11 @@ class XYZ_Rover
     XYZ_Button _xyz_button;         // Button
     XYZ_LED _xyz_led;               // led
 
-    float _throttle_center_percent;
+    int _throttle_center_percent;
     int _steering_center_angle;
 
     float _wp_thresh_ft;            // waypoint threshold in feet
     float _wp_follow_offset_ft;     // waypoint follow distance in feet
-
-    uint32_t _start_time_ms;        // start of run
 
     bool _is_I2C_IMU_setup_flag;    // IMU setup flag (true iff IMU setup success)
     bool _stopped_flag;             // Set when the wheel encoders are not changing

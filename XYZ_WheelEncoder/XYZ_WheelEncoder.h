@@ -44,7 +44,7 @@
 //
 // IMPORTANT: Set type to SINGLE -OR- QUADRATURE here!!
 //
-#define ENCODER_TYPE QUADRATURE
+#define ENCODER_TYPE SINGLE
 
 #if (ENCODER_TYPE == SINGLE)
   extern void encoder_tick();
@@ -56,7 +56,7 @@
   extern volatile uint8_t _g_enc_high_b_flag;
 #endif
 
-extern volatile uint32_t _g_encoder_counter;
+extern volatile int32_t _g_encoder_counter;
 
 class XYZ_WheelEncoder
 {

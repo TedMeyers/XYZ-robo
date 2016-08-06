@@ -19,9 +19,12 @@
 volatile uint32_t _g_last_pulse_time_us = 0;    // For valid signal heartbeat check (in micros (us))
 
 // The latest PWM duration (in micros (us)) for each channel
-volatile uint16_t _g_throttle_duration_us = 0;
-volatile uint16_t _g_steering_duration_us = 0;
-
+#if (RX_ENABLE_TH)
+  volatile uint16_t _g_throttle_duration_us = 0;
+#endif
+#if (RX_ENABLE_ST)
+  volatile uint16_t _g_steering_duration_us = 0;
+#endif
 #if (RX_ENABLE_AUX)
   volatile uint16_t _g_auxiliary_duration_us = 0;
 #endif
@@ -32,12 +35,17 @@ volatile uint16_t _g_steering_duration_us = 0;
 // calculate the pulse duration when the pulse ends.
 // ----------------------------------------------------------------
 static XYZ_RxDecoder *_g_this;
-void updateThrottleISR() {
-  _g_this->updateThrottleDuration();
-}
-void updateSteeringISR() {
-  _g_this->updateSteeringDuration();
-}
+
+#if (RX_ENABLE_TH)
+  void updateThrottleISR() {
+    _g_this->updateThrottleDuration();
+  }
+#endif
+#if (RX_ENABLE_ST)
+  void updateSteeringISR() {
+    _g_this->updateSteeringDuration();
+  }
+#endif
 #if (RX_ENABLE_AUX)
   void updateAuxISR() {
     _g_this->updateAuxiliaryDuration();
@@ -49,8 +57,12 @@ void updateSteeringISR() {
  ***************************************************************************/
 XYZ_RxDecoder::XYZ_RxDecoder()
 {
-  _th_pin = RX_PIN_NOT_USED;
-  _st_pin = RX_PIN_NOT_USED;
+  #if (RX_ENABLE_TH)
+    _th_pin = RX_PIN_NOT_USED;
+  #endif
+  #if (RX_ENABLE_ST)
+    _st_pin = RX_PIN_NOT_USED;
+  #endif
   #if (RX_ENABLE_AUX)
     _aux_pin = RX_PIN_NOT_USED;
   #endif
@@ -60,44 +72,49 @@ void XYZ_RxDecoder::setup(uint8_t th_pin, uint8_t st_pin, uint8_t aux_pin)
 {
   _g_this = this;
 
-  _th_pin = th_pin;
-  _st_pin = st_pin;
-
-  if (_th_pin != RX_PIN_NOT_USED) {
-    pinMode(_th_pin, INPUT_PULLUP);
-    enableInterrupt(_th_pin, updateThrottleISR, CHANGE);
-  }
-  if (_st_pin != RX_PIN_NOT_USED) {
-    pinMode(_st_pin, INPUT_PULLUP);
-    enableInterrupt(_st_pin, updateSteeringISR, CHANGE);
-  }
+  #if (RX_ENABLE_TH)
+    _th_pin = th_pin;
+    if (th_pin != RX_PIN_NOT_USED) {
+      pinMode(th_pin, INPUT_PULLUP);
+      enableInterrupt(th_pin, updateThrottleISR, CHANGE);
+    }
+  #endif
+  #if (RX_ENABLE_ST)
+    _st_pin = st_pin;
+    if (st_pin != RX_PIN_NOT_USED) {
+      pinMode(st_pin, INPUT_PULLUP);
+      enableInterrupt(_st_pin, updateSteeringISR, CHANGE);
+    }
+  #endif
   #if (RX_ENABLE_AUX)
     _aux_pin = aux_pin;
-    if (_aux_pin != RX_PIN_NOT_USED) {
-      pinMode(_aux_pin, INPUT_PULLUP);
-      enableInterrupt(_aux_pin, updateAuxISR, CHANGE);
+    if (aux_pin != RX_PIN_NOT_USED) {
+      pinMode(aux_pin, INPUT_PULLUP);
+      enableInterrupt(aux_pin, updateAuxISR, CHANGE);
     }
   #endif
 }
 
-uint16_t XYZ_RxDecoder::getThrottleMicros()
-{
-	uint16_t usecs;
-  	noInterrupts();
-  	usecs = _g_throttle_duration_us;
-    interrupts();
-    return usecs;
-}
-
-uint16_t XYZ_RxDecoder::getSteeringMicros()
-{
-	uint16_t usecs;
-  	noInterrupts();
-  	usecs = _g_steering_duration_us;
-    interrupts();
-    return usecs;
-}
-
+#if (RX_ENABLE_TH)
+  uint16_t XYZ_RxDecoder::getThrottleMicros()
+  {
+  	uint16_t usecs;
+    	noInterrupts();
+    	usecs = _g_throttle_duration_us;
+      interrupts();
+      return usecs;
+  }
+#endif
+#if (RX_ENABLE_ST)
+  uint16_t XYZ_RxDecoder::getSteeringMicros()
+  {
+  	uint16_t usecs;
+    	noInterrupts();
+    	usecs = _g_steering_duration_us;
+      interrupts();
+      return usecs;
+  }
+#endif
 #if (RX_ENABLE_AUX)
   uint16_t XYZ_RxDecoder::getAuxiliaryMicros()
   {
@@ -109,39 +126,43 @@ uint16_t XYZ_RxDecoder::getSteeringMicros()
   }
 #endif
 
-void XYZ_RxDecoder::updateThrottleDuration()
-{
-  static uint32_t th_start_time_us = 0;
+#if (RX_ENABLE_TH)
+  void XYZ_RxDecoder::updateThrottleDuration()
+  {
+    static uint32_t th_start_time_us = 0;
 
-  // Throttle has a failsafe in the Rx, so there are always pulses coming in,
-  // skip setting the lastPulseTime
-  uint32_t t_us = micros();  
-  if (digitalRead(_th_pin) == HIGH) { 
-    th_start_time_us = t_us;
-  } else {
-  	noInterrupts();
-    _g_throttle_duration_us = (uint16_t)(t_us - th_start_time_us);
-    interrupts();
+    // Throttle has a failsafe in the Rx, so there are always pulses coming in,
+    // skip setting the lastPulseTime
+    uint32_t t_us = micros();  
+    if (digitalRead(_th_pin) == HIGH) { 
+      th_start_time_us = t_us;
+    } else {
+    	noInterrupts();
+      _g_throttle_duration_us = (uint16_t)(t_us - th_start_time_us);
+      interrupts();
+    }
   }
-}
+#endif
 
-void XYZ_RxDecoder::updateSteeringDuration()
-{
-  static uint32_t st_start_time_us = 0;
+#if (RX_ENABLE_ST)
+  void XYZ_RxDecoder::updateSteeringDuration()
+  {
+    static uint32_t st_start_time_us = 0;
 
-  uint32_t t_us = micros();
-  noInterrupts();
-  _g_last_pulse_time_us = t_us;
-  interrupts();  
+    uint32_t t_us = micros();
+    noInterrupts();
+    _g_last_pulse_time_us = t_us;
+    interrupts();  
 
-  if (digitalRead(_st_pin) == HIGH) { 
-    st_start_time_us = t_us;
-  } else {
-  	noInterrupts();
-    _g_steering_duration_us = (uint16_t)(t_us - st_start_time_us);
-    interrupts();
+    if (digitalRead(_st_pin) == HIGH) { 
+      st_start_time_us = t_us;
+    } else {
+    	noInterrupts();
+      _g_steering_duration_us = (uint16_t)(t_us - st_start_time_us);
+      interrupts();
+    }
   }
-}
+#endif
 
 #if (RX_ENABLE_AUX)
   void XYZ_RxDecoder::updateAuxiliaryDuration()
@@ -188,8 +209,12 @@ bool XYZ_RxDecoder::checkSignal() {
 
     if (!_s_valid_signal_flag && b) {
       noInterrupts();
-      _g_throttle_duration_us = RX_NO_VALUE;
-      _g_steering_duration_us = RX_NO_VALUE;
+      #if (RX_ENABLE_TH)      
+        _g_throttle_duration_us = RX_NO_VALUE;
+      #endif
+      #if (RX_ENABLE_ST)      
+        _g_steering_duration_us = RX_NO_VALUE;
+      #endif
       #if (RX_ENABLE_AUX)      
         _g_auxiliary_duration_us = RX_NO_VALUE;
       #endif

@@ -11,8 +11,9 @@
  The values are put out in pulse widths between about 1000 and 2000
  microseconds.
 
- Set RX_ENABLE_AUX to 0 to disable the AUX channel (if  not in use).
- Set to 1 to enable.
+ Set RX_ENABLE_TH to 0 to disable the THROTTLE channel (if not in use), 1 to enable.
+ Set RX_ENABLE_ST to 0 to disable the STEERING channel (if not in use), 1 to enable.
+ Set RX_ENABLE_AUX to 0 to disable the AUXILIARY channel (if not in use), 1 to enable.
 
  Uses XYZ_Interrupt, which uses the EnableInterrupts library.
 */
@@ -27,6 +28,12 @@
 #endif
 // ----------------------------
 
+// Set to 0 to disable, 1 to enable the throttle channel
+#define RX_ENABLE_TH 1
+
+// Set to 0 to disable, 1 to enable the steerung channel
+#define RX_ENABLE_ST 1
+
 // Many RC transmitters do not have an auxiliary channel, so
 // you may want to set to 0 to disable (and save some memory/code space).
 #define RX_ENABLE_AUX 1
@@ -39,20 +46,20 @@ class XYZ_RxDecoder
   public:
     XYZ_RxDecoder();
 
-    void setup(uint8_t th_pin, uint8_t st_pin, uint8_t aux_pin=99);
+    void setup(uint8_t th_pin, uint8_t st_pin=RX_PIN_NOT_USED, uint8_t aux_pin=RX_PIN_NOT_USED);
 
     bool checkSignal();              // Get the signal valid status
 
-    uint8_t getThrottlePin() { return _th_pin; }
-    uint8_t getSteeringPin() { return _st_pin; }
-
-    uint16_t getThrottleMicros();
-    uint16_t getSteeringMicros();
-
-
-    void updateThrottleDuration();
-    void updateSteeringDuration();
-
+    #if (RX_ENABLE_TH)
+      uint8_t getThrottlePin() { return _th_pin; }
+      uint16_t getThrottleMicros();
+      void updateThrottleDuration();
+    #endif
+    #if (RX_ENABLE_ST)
+      uint8_t getSteeringPin() { return _st_pin; }
+      uint16_t getSteeringMicros();
+      void updateSteeringDuration();
+    #endif
     #if (RX_ENABLE_AUX)
       uint8_t getAuxiliaryPin() { return _aux_pin; }
       uint16_t getAuxiliaryMicros();
@@ -60,9 +67,12 @@ class XYZ_RxDecoder
     #endif
 
   private:
-    uint8_t _th_pin;                // Pin number of throttle input
-    uint8_t _st_pin;                // Pin number of steering input
-
+    #if (RX_ENABLE_TH)
+      uint8_t _th_pin;                // Pin number of throttle input
+    #endif
+    #if (RX_ENABLE_ST)
+      uint8_t _st_pin;                // Pin number of steering input
+    #endif
     #if (RX_ENABLE_AUX)
         uint8_t _aux_pin;           // Pin number of auxiliary input
     #endif

@@ -71,13 +71,13 @@ void loop(void)
       return;
     }
 
-    float ypr[3];
-    bno.readYPR(ypr);
+    float ypr_deg[3];
+    bno.readYPR_deg(ypr);
 
     Serial.print("YPR: ");
-    Serial.print(ypr[0], 2); Serial.print(", ");
-    Serial.print(ypr[1], 2); Serial.print(", ");
-    Serial.print(ypr[2], 2); Serial.print("  ");
+    Serial.print(ypr_deg[0], 2); Serial.print(", ");
+    Serial.print(ypr_deg[1], 2); Serial.print(", ");
+    Serial.print(ypr_deg[2], 2); Serial.print("  ");
     Serial.print("CAL: ");
     Serial.print(stats[0]); Serial.print(", ");
     Serial.print(stats[1]); Serial.print(", ");

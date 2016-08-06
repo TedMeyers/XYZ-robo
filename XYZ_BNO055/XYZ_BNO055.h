@@ -270,13 +270,20 @@ class XYZ_BNO055
     uint8_t getMode() ;
 
     void setMode(uint8_t);
-    void readYPR(float *);
-    float readHeading();
-    float readPitch();
-    float readRoll();
-    float readYPRValue(uint8_t i);
     uint8_t readCalibration(uint8_t *);
     uint8_t readSysErr();
+
+    float readHeading_deg() { return readYPRValue_deg(0); }
+    float readPitch_deg() { return readYPRValue_deg(1); }
+    float readRoll_deg() { return readYPRValue_deg(2); }
+    float readYPRValue_deg(uint8_t i);
+    void readYPR_deg(float *);
+
+    int16_t readHeading_raw() { return readYPRValue_raw(0); }
+    int16_t readPitch_raw() { return readYPRValue_raw(1); }
+    int16_t readRoll_raw() { return readYPRValue_raw(2); }
+    int16_t readYPRValue_raw(uint8_t i);
+    // void XYZ_BNO055::readYPR_raw(int16_t *ypr_raw);  // THis would be the same as readEulData()!
 
     void readAccelData(int16_t *);
     void readGyroData(int16_t *);

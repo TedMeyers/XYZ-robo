@@ -115,29 +115,31 @@ uint8_t XYZ_BNO055::readSysErr() {
 //===================================================================================================================
 //====== Set of useful function to access acceleration. gyroscope, magnetometer, and temperature data
 //===================================================================================================================
-float XYZ_BNO055::readHeading() {
-  return readYPRValue(0);
-}
-float XYZ_BNO055::readPitch() {
-  return readYPRValue(1);
-}
-float XYZ_BNO055::readRoll() {
-  return readYPRValue(2);
-}
-float XYZ_BNO055::readYPRValue(uint8_t i) {
+float XYZ_BNO055::readYPRValue_deg(uint8_t i) {
   int16_t EulCount[3];    // Stores the 16-bit signed Euler angle output
   readEulData(EulCount);  // Read the x/y/z adc values 
   return (float)EulCount[i]/16.;
 }
-void XYZ_BNO055::readYPR(float *ypr) {
+void XYZ_BNO055::readYPR_deg(float *ypr_deg) {
   int16_t EulCount[3];    // Stores the 16-bit signed Euler angle output
   readEulData(EulCount);  // Read the x/y/z adc values 
   
   // Calculate the Euler angles values in degrees
-  ypr[0] = (float)EulCount[0]/16.;  
-  ypr[2] = (float)EulCount[1]/16.;  
-  ypr[1] = (float)EulCount[2]/16.;   
+  // The pitch and roll are reversed?  I'm assuming that this is correct.
+  ypr_deg[0] = (float)EulCount[0]/16.;  
+  ypr_deg[2] = (float)EulCount[1]/16.;  
+  ypr_deg[1] = (float)EulCount[2]/16.;   
 }
+
+int16_t XYZ_BNO055::readYPRValue_raw(uint8_t i) {
+  int16_t EulCount[3];    // Stores the 16-bit signed Euler angle output
+  readEulData(EulCount);  // Read the x/y/z adc values 
+  return EulCount[i];
+}
+// Just call readEulData() directly!
+//void XYZ_BNO055::readYPR_raw(int16_t *ypr_raw) {
+//  readEulData(ypr_raw);  // Read the x/y/z adc values 
+//}
 
 
 void XYZ_BNO055::readAccelData(int16_t * destination)

@@ -27,7 +27,6 @@ XYZ_Rover::XYZ_Rover()
   _reverse_throttle_percent = REVERSE_THROTTLE_PERCENT;
 
   _is_I2C_IMU_setup_flag = false;
-  _start_time_ms = 0;
   _start_mag_heading_deg = 0.0;
 
   _steering_Kp = STEERING_P;
@@ -115,8 +114,6 @@ void XYZ_Rover::reset()
 
   setToZeroPosition();
   servoReset();
-
-  _start_time_ms = millis();
 }
 
 void XYZ_Rover::resetHeadings() {
@@ -206,19 +203,19 @@ void XYZ_Rover::setStraight()
   setClosestTurnMode();
   setAngleTurnDeg(0);
 }
-void XYZ_Rover::setLeftTurnDeg(int angleDeg)
+void XYZ_Rover::setLeftTurnDeg(float angleDeg)
 {
   setLeftTurnMode();
   setAngleTurnDeg(-angleDeg);
 }
-void XYZ_Rover::setRightTurnDeg(int angleDeg)
+void XYZ_Rover::setRightTurnDeg(float angleDeg)
 {
   setRightTurnMode();
   setAngleTurnDeg(angleDeg);
 }
-void XYZ_Rover::setAngleTurnDeg(int angleDeg)
+void XYZ_Rover::setAngleTurnDeg(float angleDeg)
 {
-  int headingDeg = normalizeDeg360(_to_rel_heading_deg + angleDeg);
+  float headingDeg = normalizeDeg360(_to_rel_heading_deg + angleDeg);
   setToHeadingDeg(headingDeg);
 }
 
@@ -460,7 +457,7 @@ void XYZ_Rover::updateIMU()
   if ((millis() - _s_imu_update_time_ms) >= IMU_UPDATE_TIME_MS) {
     _s_imu_update_time_ms = millis();
     #ifdef USE_BNO
-      _cur_mag_heading_deg = normalizeDeg360(_xyz_imu.readHeading());
+      _cur_mag_heading_deg = normalizeDeg360(_xyz_imu.readHeading_deg());
     #endif
     #ifdef USE_MPU
       _xyz_imu.updateYPR(); 

@@ -16,7 +16,7 @@
 #define LIBCALL_ENABLEINTERRUPT
 #include "XYZ_Interrupts.h"
 
-volatile uint32_t _g_encoder_counter;    // The number of encoder ticks
+volatile int32_t _g_encoder_counter;    // The number of encoder ticks
 
 // Called when the encoder pin changes
 #if (ENCODER_TYPE == SINGLE)
